@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <!--
+        Added the constraints for entity Courier.
+    -->
+    <changeSet id="20180620165218-2" author="jhipster">
+        
+        <addForeignKeyConstraint baseColumnNames="couriers_id"
+                                 baseTableName="courier_courier_group"
+                                 constraintName="fk_courier_courier_group_couriers_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="courier"/>
+        <addForeignKeyConstraint baseColumnNames="courier_groups_id"
+                                 baseTableName="courier_courier_group"
+                                 constraintName="fk_courier_courier_group_courier_groups_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="courier_group"/>
+        
+    </changeSet>
+</databaseChangeLog>

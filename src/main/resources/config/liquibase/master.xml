@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165215_added_entity_RegionType.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165216_added_entity_CourierChannel.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165217_added_entity_CourierGroup.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165218_added_entity_Courier.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165219_added_entity_Pincode.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165220_added_entity_CourierPricingEngine.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165221_added_entity_ProductVariant.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165222_added_entity_Channel.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165223_added_entity_SourceDestinationMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165224_added_entity_VendorWHCourierMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165225_added_entity_AwbStatus.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165226_added_entity_Awb.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165227_added_entity_City.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165228_added_entity_Country.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165229_added_entity_State.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165230_added_entity_Zone.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165231_added_entity_Hub.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165232_added_entity_PincodeCourierMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165233_added_entity_PincodeRegionZone.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    <include file="config/liquibase/changelog/20180620165216_added_entity_constraints_CourierChannel.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165218_added_entity_constraints_Courier.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165219_added_entity_constraints_Pincode.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165220_added_entity_constraints_CourierPricingEngine.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165224_added_entity_constraints_VendorWHCourierMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165226_added_entity_constraints_Awb.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165232_added_entity_constraints_PincodeCourierMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180620165233_added_entity_constraints_PincodeRegionZone.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+</databaseChangeLog>

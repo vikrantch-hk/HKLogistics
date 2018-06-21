@@ -1,0 +1,27 @@
+{
+    "name": "CourierGroup",
+    "fields": [
+        {
+            "fieldName": "name",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-many",
+            "relationshipName": "courier",
+            "otherEntityName": "courier",
+            "ownerSide": false,
+            "otherEntityRelationshipName": "courierGroup"
+        }
+    ],
+    "changelogDate": "20180620165217",
+    "entityTableName": "courier_group",
+    "dto": "mapstruct",
+    "pagination": "no",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}

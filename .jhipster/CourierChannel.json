@@ -1,0 +1,46 @@
+{
+    "name": "CourierChannel",
+    "fields": [
+        {
+            "fieldName": "minWeight",
+            "fieldType": "Double"
+        },
+        {
+            "fieldName": "maxWeight",
+            "fieldType": "Double"
+        },
+        {
+            "fieldName": "natureOfProduct",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "vendorWHCourierMapping",
+            "otherEntityName": "vendorWHCourierMapping",
+            "otherEntityRelationshipName": "courierChannel"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "channel",
+            "otherEntityName": "channel",
+            "otherEntityField": "name"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "courier",
+            "otherEntityName": "courier",
+            "otherEntityField": "name"
+        }
+    ],
+    "changelogDate": "20180620165216",
+    "entityTableName": "courier_channel",
+    "dto": "mapstruct",
+    "pagination": "no",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}
