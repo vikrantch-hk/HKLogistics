@@ -99,6 +99,22 @@ public class RegionTypeServiceImpl implements RegionTypeService {
     }
 
     /**
+     * Search for the regionType/priority corresponding to the query.
+     *
+     * @param query the query of the search
+     * @return the list of entities
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<RegionTypeDTO> searchPriority(String query) {
+        log.debug("Request to search RegionTypes/priority for query {}", query);
+        return StreamSupport
+            .stream(regionTypeSearchRepository.findByPriority(query).spliterator(),false)
+            .map(regionTypeMapper::toDto)
+            .collect(Collectors.toList());
+    }
+    
+    /**
      * Search for the regionType corresponding to the query.
      *
      * @param query the query of the search
@@ -106,10 +122,10 @@ public class RegionTypeServiceImpl implements RegionTypeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<RegionTypeDTO> search(String query) {
-        log.debug("Request to search RegionTypes for query {}", query);
+    public List<RegionTypeDTO> searchName(String query) {
+        log.debug("Request to search RegionTypes/name for query {}", query);
         return StreamSupport
-            .stream(regionTypeSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+            .stream(regionTypeSearchRepository.findByNameLike(query).spliterator(),false)
             .map(regionTypeMapper::toDto)
             .collect(Collectors.toList());
     }

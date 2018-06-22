@@ -37,8 +37,14 @@ export class RegionTypeService {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
 
-    search(req?: any): Observable<EntityArrayResponseType> {
+    searchName(req?: any): Observable<EntityArrayResponseType> {
         const options = createRequestOption(req);
-        return this.http.get<IRegionType[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
+        console.log('searchName');
+        return this.http.get<IRegionType[]>(this.resourceSearchUrl + '/name', { params: options, observe: 'response' });
+    }
+    searchPriority(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        console.log('searchPriority');
+        return this.http.get<IRegionType[]>(this.resourceSearchUrl + '/priority', { params: options, observe: 'response' });
     }
 }

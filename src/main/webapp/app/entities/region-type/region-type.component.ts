@@ -16,7 +16,8 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
     regionTypes: IRegionType[];
     currentAccount: any;
     eventSubscriber: Subscription;
-    currentSearch: string;
+    currentSearchPriority: string;
+    currentSearchName: string;
 
     constructor(
         private regionTypeService: RegionTypeService,
@@ -25,43 +26,76 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private principal: Principal
     ) {
-        this.currentSearch =
-            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
-                ? this.activatedRoute.snapshot.params['search']
+        this.currentSearchPriority =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['searchPriority']
+                ? this.activatedRoute.snapshot.params['searchPriority']
+                : '';
+        this.currentSearchName =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['searchName']
+                ? this.activatedRoute.snapshot.params['searchName']
                 : '';
     }
 
     loadAll() {
-        if (this.currentSearch) {
+        if (this.currentSearchPriority) {
             this.regionTypeService
-                .search({
-                    query: this.currentSearch
+                .searchPriority({
+                    query: this.currentSearchPriority
                 })
                 .subscribe(
                     (res: HttpResponse<IRegionType[]>) => (this.regionTypes = res.body),
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
+                this.currentSearchName = '';
+            return;
+        }
+        if (this.currentSearchName) {
+            this.regionTypeService
+                .searchName({
+                    query: this.currentSearchName
+                })
+                .subscribe(
+                    (res: HttpResponse<IRegionType[]>) => (this.regionTypes = res.body),
+                    (res: HttpErrorResponse) => this.onError(res.message)
+                );
+                this.currentSearchPriority = '';
             return;
         }
         this.regionTypeService.query().subscribe(
             (res: HttpResponse<IRegionType[]>) => {
                 this.regionTypes = res.body;
-                this.currentSearch = '';
+                this.currentSearchPriority = '';
+                this.currentSearchName = '';
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
     }
 
-    search(query) {
+    searchPriority(query) {
         if (!query) {
-            return this.clear();
+            return this.clearPriority();
         }
-        this.currentSearch = query;
+        console.log('hii');
+        this.currentSearchPriority = query;
         this.loadAll();
     }
 
-    clear() {
-        this.currentSearch = '';
+    clearPriority() {
+        this.currentSearchPriority = '';
+        this.loadAll();
+    }
+
+    searchName(query) {
+        if (!query) {
+            return this.clearName();
+        }
+        console.log('hii');
+        this.currentSearchName = query;
+        this.loadAll();
+    }
+
+    clearName() {
+        this.currentSearchName = '';
         this.loadAll();
     }
 

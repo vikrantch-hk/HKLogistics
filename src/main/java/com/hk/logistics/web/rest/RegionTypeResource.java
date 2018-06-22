@@ -127,17 +127,31 @@ public class RegionTypeResource {
     }
 
     /**
-     * SEARCH  /_search/region-types?query=:query : search for the regionType corresponding
+     * SEARCH  /_search/region-types/priority?query=:query : search for the regionType corresponding
      * to the query.
      *
      * @param query the query of the regionType search
      * @return the result of the search
      */
-    @GetMapping("/_search/region-types")
+    @GetMapping("/_search/region-types/priority")
     @Timed
-    public List<RegionTypeDTO> searchRegionTypes(@RequestParam String query) {
-        log.debug("REST request to search RegionTypes for query {}", query);
-        return regionTypeService.search(query);
+    public List<RegionTypeDTO> searchRegionTypesPriority(@RequestParam String query) {
+        log.debug("REST request to search RegionTypes/priority for query {}", query);
+        return regionTypeService.searchPriority(query);
+    }
+
+    /**
+     * SEARCH  /_search/region-types/name?query=:query : search for the regionType corresponding
+     * to the query.
+     *
+     * @param query the query of the regionType search
+     * @return the result of the search
+     */
+    @GetMapping("/_search/region-types/name")
+    @Timed
+    public List<RegionTypeDTO> searchRegionTypesName(@RequestParam String query) {
+        log.debug("REST request to search RegionTypes/name for query {}", query);
+        return regionTypeService.searchName(query);
     }
 
 }

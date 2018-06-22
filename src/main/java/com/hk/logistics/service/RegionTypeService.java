@@ -42,11 +42,20 @@ public interface RegionTypeService {
     void delete(Long id);
 
     /**
-     * Search for the regionType corresponding to the query.
+     * Search for the regionType/priority corresponding to the query.
      *
      * @param query the query of the search
      * 
      * @return the list of entities
      */
-    List<RegionTypeDTO> search(String query);
+    List<RegionTypeDTO> searchPriority(String query);
+    
+    /**
+     * Search for the regionType/name corresponding to the query.
+     *
+     * @param query the query of the search
+     * 
+     * @return the list of entities
+     */
+    List<RegionTypeDTO> searchName(String query);
 }
