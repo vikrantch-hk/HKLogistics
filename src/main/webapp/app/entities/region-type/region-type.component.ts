@@ -70,6 +70,9 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
         const elem = event.target;
         if (elem.files.length > 0) {
           const fileSelected: File = elem.files[0];
+          if (fileSelected.name.substring(fileSelected.name.lastIndexOf('.')) !== '.xlsx') {
+            return this.jhiAlertService.error('Please upload .xlsx file!', null, null);
+          }
           this.regionTypeService.uploadFile(fileSelected)
              .subscribe( response => {
           console.log('set any success actions...');

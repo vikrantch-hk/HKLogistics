@@ -28,7 +28,7 @@ public class RegionType implements Serializable {
     private String name;
 
     @Column(name = "priority")
-    private long priority;
+    private Long priority;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -56,12 +56,12 @@ public class RegionType implements Serializable {
         return priority;
     }
 
-    public RegionType priority(long priority) {
+    public RegionType priority(Long priority) {
         this.priority = priority;
         return this;
     }
 
-    public void setPriority(long priority) {
+    public void setPriority(Long priority) {
         this.priority = priority;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove

@@ -1,6 +1,7 @@
 package com.hk.logistics.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hk.logistics.security.AuthoritiesConstants;
 import com.hk.logistics.service.RegionTypeService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -164,30 +166,34 @@ public class RegionTypeResource {
     }
     
     @RequestMapping(value = "/region-types/upload", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('"+AuthoritiesConstants.MANAGER+"')")
     public @ResponseBody ResponseEntity<RegionTypeDTO> handleFileUpload(
-            @RequestParam(value="file", required=false) MultipartFile	 file) throws URISyntaxException {
-    	RegionTypeDTO result = null;
-        try {
-        	List<RegionTypeDTO> vendorList = Poiji.fromExcel(new ByteArrayInputStream(file.getBytes()), PoijiExcelType.XLSX, RegionTypeDTO.class);
-        	
-        	Future<List<RegionTypeDTO>> savedEntities;
-        	
-        	
-			if(vendorList.size() > 0){
-				
+			@RequestParam(value = "file", required = false) MultipartFile file) throws URISyntaxException {
+		RegionTypeDTO result = null;
+		try {
+			List<RegionTypeDTO> vendorList = Poiji.fromExcel(new ByteArrayInputStream(file.getBytes()),
+					PoijiExcelType.XLSX, RegionTypeDTO.class);
+
+			Future<List<RegionTypeDTO>> savedEntities;
+
+			if (vendorList.size() > 0) {
+
 				savedEntities = bulkSave(vendorList);
 				return ResponseEntity.created(new URI("/api/upload/"))
-			            .headers(HeaderUtil.createEntityCreationAlert("Vendor", null))
-			            .body(result);
-				
-			}else{
+						// .headers(HeaderUtil.createEntityCreationAlert("Vendor", null))
+						.body(result);
+
+			} else {
 				throw new BadRequestAlertException("A new vendor File cannot be empty", ENTITY_NAME, "idexists");
 			}
-        }catch (RuntimeException | IOException e) {
-            log.error("Error while uploading.", e);
-            throw new BadRequestAlertException("A new vendor File cannot be empty", ENTITY_NAME, "idexists");
-        }       
-    }
+		} catch (RuntimeException | IOException e) {
+			log.error("Error while uploading.", e);
+			throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+		} catch (Exception e) {
+			log.error("Error while uploading.", e);
+			throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+		}
+	}
     @Async
 	public Future<List<RegionTypeDTO>> bulkSave(List<RegionTypeDTO> entities) {
         int size = entities.size();

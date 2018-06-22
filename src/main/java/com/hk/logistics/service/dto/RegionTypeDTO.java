@@ -16,7 +16,7 @@ public class RegionTypeDTO implements Serializable {
     private String name;
 
     @ExcelCellName("priority")
-    private long priority;
+    private Long priority;
 
     public Long getId() {
         return id;
@@ -34,11 +34,11 @@ public class RegionTypeDTO implements Serializable {
         this.name = name;
     }
 
-    public long getPriority() {
+    public Long getPriority() {
         return priority;
     }
 
-    public void setPriority(long priority) {
+    public void setPriority(Long priority) {
         this.priority = priority;
     }
 
