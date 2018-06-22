@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SourceDestinationMappingRepository extends JpaRepository<SourceDestinationMapping, Long> {
+public interface SourceDestinationMappingRepository extends JpaRepository<SourceDestinationMapping, Long>, JpaSpecificationExecutor<SourceDestinationMapping> {
 
 }

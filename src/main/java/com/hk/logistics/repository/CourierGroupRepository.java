@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface CourierGroupRepository extends JpaRepository<CourierGroup, Long> {
+public interface CourierGroupRepository extends JpaRepository<CourierGroup, Long>, JpaSpecificationExecutor<CourierGroup> {
 
 }

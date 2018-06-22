@@ -5,6 +5,8 @@ import com.hk.logistics.service.ChannelService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.ChannelDTO;
+import com.hk.logistics.service.dto.ChannelCriteria;
+import com.hk.logistics.service.ChannelQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class ChannelResource {
 
     private final ChannelService channelService;
 
-    public ChannelResource(ChannelService channelService) {
+    private final ChannelQueryService channelQueryService;
+
+    public ChannelResource(ChannelService channelService, ChannelQueryService channelQueryService) {
         this.channelService = channelService;
+        this.channelQueryService = channelQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class ChannelResource {
     /**
      * GET  /channels : get all the channels.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of channels in body
      */
     @GetMapping("/channels")
     @Timed
-    public List<ChannelDTO> getAllChannels() {
-        log.debug("REST request to get all Channels");
-        return channelService.findAll();
+    public ResponseEntity<List<ChannelDTO>> getAllChannels(ChannelCriteria criteria) {
+        log.debug("REST request to get Channels by criteria: {}", criteria);
+        List<ChannelDTO> entityList = channelQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

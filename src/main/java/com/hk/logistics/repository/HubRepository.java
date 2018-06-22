@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface HubRepository extends JpaRepository<Hub, Long> {
+public interface HubRepository extends JpaRepository<Hub, Long>, JpaSpecificationExecutor<Hub> {
 
 }

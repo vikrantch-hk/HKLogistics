@@ -5,6 +5,8 @@ import com.hk.logistics.service.ProductVariantService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.ProductVariantDTO;
+import com.hk.logistics.service.dto.ProductVariantCriteria;
+import com.hk.logistics.service.ProductVariantQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class ProductVariantResource {
 
     private final ProductVariantService productVariantService;
 
-    public ProductVariantResource(ProductVariantService productVariantService) {
+    private final ProductVariantQueryService productVariantQueryService;
+
+    public ProductVariantResource(ProductVariantService productVariantService, ProductVariantQueryService productVariantQueryService) {
         this.productVariantService = productVariantService;
+        this.productVariantQueryService = productVariantQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class ProductVariantResource {
     /**
      * GET  /product-variants : get all the productVariants.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of productVariants in body
      */
     @GetMapping("/product-variants")
     @Timed
-    public List<ProductVariantDTO> getAllProductVariants() {
-        log.debug("REST request to get all ProductVariants");
-        return productVariantService.findAll();
+    public ResponseEntity<List<ProductVariantDTO>> getAllProductVariants(ProductVariantCriteria criteria) {
+        log.debug("REST request to get ProductVariants by criteria: {}", criteria);
+        List<ProductVariantDTO> entityList = productVariantQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

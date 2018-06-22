@@ -5,6 +5,8 @@ import com.hk.logistics.service.AwbService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.AwbDTO;
+import com.hk.logistics.service.dto.AwbCriteria;
+import com.hk.logistics.service.AwbQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class AwbResource {
 
     private final AwbService awbService;
 
-    public AwbResource(AwbService awbService) {
+    private final AwbQueryService awbQueryService;
+
+    public AwbResource(AwbService awbService, AwbQueryService awbQueryService) {
         this.awbService = awbService;
+        this.awbQueryService = awbQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class AwbResource {
     /**
      * GET  /awbs : get all the awbs.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of awbs in body
      */
     @GetMapping("/awbs")
     @Timed
-    public List<AwbDTO> getAllAwbs() {
-        log.debug("REST request to get all Awbs");
-        return awbService.findAll();
+    public ResponseEntity<List<AwbDTO>> getAllAwbs(AwbCriteria criteria) {
+        log.debug("REST request to get Awbs by criteria: {}", criteria);
+        List<AwbDTO> entityList = awbQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

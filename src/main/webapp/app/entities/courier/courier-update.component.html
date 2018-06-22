@@ -63,9 +63,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="field_courierGroup">Courier Group</label>
-                    <select class="form-control" id="field_courierGroup" multiple name="courierGroup" [(ngModel)]="courier.courierGroups">
-                        <option [ngValue]="getSelected(courier.courierGroups, courierGroupOption)" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById">{{courierGroupOption.name}}</option>
+                    <label class="form-control-label" for="field_courierChannel">Courier Channel</label>
+                    <select class="form-control" id="field_courierChannel" name="courierChannel" [(ngModel)]="courier.courierChannelId" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="courierChannelOption.id" *ngFor="let courierChannelOption of courierchannels; trackBy: trackCourierChannelById">{{courierChannelOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_courierGroup">Courier Group</label>
+                    <select class="form-control" id="field_courierGroup" name="courierGroup" [(ngModel)]="courier.courierGroupId" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="courierGroupOption.id" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById">{{courierGroupOption.name}}</option>
                     </select>
                 </div>
             </div>

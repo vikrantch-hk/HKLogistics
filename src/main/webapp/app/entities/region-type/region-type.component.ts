@@ -7,7 +7,6 @@ import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
 import { IRegionType } from 'app/shared/model/region-type.model';
 import { Principal } from 'app/core';
 import { RegionTypeService } from './region-type.service';
-import * as XLSX from 'xlsx';
 
 @Component({
     selector: 'jhi-region-type',
@@ -64,36 +63,6 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
     clear() {
         this.currentSearch = '';
         this.loadAll();
-    }
-
-    upload(event) {
-        const elem = event.target;
-        if (elem.files.length > 0) {
-          const fileSelected: File = elem.files[0];
-          if (fileSelected.name.substring(fileSelected.name.lastIndexOf('.')) !== '.xlsx') {
-            return this.jhiAlertService.error('Please upload .xlsx file!', null, null);
-          }
-          this.regionTypeService.uploadFile(fileSelected)
-             .subscribe( response => {
-          console.log('set any success actions...');
-          this.jhiAlertService.success('uploaded file please refresh after sometime', null, null);
-         // this.loadAll();
-          return response;
-    }.
-     error => {
-       console.log(error.message);
-       this.jhiAlertService.error(error.statusText, null, null);
-     });
-        event.target.value = null;
-        }
-    }
-
-    ExportToExcel() {
-      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.regionTypes);
-      const wb: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-      /* save to file */
-      XLSX.writeFile(wb, 'ExportSheet.xlsx');
     }
 
     ngOnInit() {

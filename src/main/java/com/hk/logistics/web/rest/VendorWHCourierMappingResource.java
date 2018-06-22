@@ -5,6 +5,8 @@ import com.hk.logistics.service.VendorWHCourierMappingService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.VendorWHCourierMappingDTO;
+import com.hk.logistics.service.dto.VendorWHCourierMappingCriteria;
+import com.hk.logistics.service.VendorWHCourierMappingQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class VendorWHCourierMappingResource {
 
     private final VendorWHCourierMappingService vendorWHCourierMappingService;
 
-    public VendorWHCourierMappingResource(VendorWHCourierMappingService vendorWHCourierMappingService) {
+    private final VendorWHCourierMappingQueryService vendorWHCourierMappingQueryService;
+
+    public VendorWHCourierMappingResource(VendorWHCourierMappingService vendorWHCourierMappingService, VendorWHCourierMappingQueryService vendorWHCourierMappingQueryService) {
         this.vendorWHCourierMappingService = vendorWHCourierMappingService;
+        this.vendorWHCourierMappingQueryService = vendorWHCourierMappingQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class VendorWHCourierMappingResource {
     /**
      * GET  /vendor-wh-courier-mappings : get all the vendorWHCourierMappings.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of vendorWHCourierMappings in body
      */
     @GetMapping("/vendor-wh-courier-mappings")
     @Timed
-    public List<VendorWHCourierMappingDTO> getAllVendorWHCourierMappings() {
-        log.debug("REST request to get all VendorWHCourierMappings");
-        return vendorWHCourierMappingService.findAll();
+    public ResponseEntity<List<VendorWHCourierMappingDTO>> getAllVendorWHCourierMappings(VendorWHCourierMappingCriteria criteria) {
+        log.debug("REST request to get VendorWHCourierMappings by criteria: {}", criteria);
+        List<VendorWHCourierMappingDTO> entityList = vendorWHCourierMappingQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

@@ -49,6 +49,4 @@ public interface RegionTypeService {
      * @return the list of entities
      */
     List<RegionTypeDTO> search(String query);
-
-	List<RegionTypeDTO> upload(List<RegionTypeDTO> batch);
 }

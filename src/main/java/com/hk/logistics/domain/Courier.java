@@ -1,6 +1,6 @@
 package com.hk.logistics.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -9,8 +9,6 @@ import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -54,16 +52,13 @@ public class Courier implements Serializable {
     @Column(name = "reverse_pickup")
     private Boolean reversePickup;
 
-    @OneToMany(mappedBy = "courier")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<CourierChannel> courierChannels = new HashSet<>();
+    @ManyToOne
+    @JsonIgnoreProperties("couriers")
+    private CourierChannel courierChannel;
 
-    @ManyToMany
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @JoinTable(name = "courier_courier_group",
-               joinColumns = @JoinColumn(name = "couriers_id", referencedColumnName = "id"),
-               inverseJoinColumns = @JoinColumn(name = "courier_groups_id", referencedColumnName = "id"))
-    private Set<CourierGroup> courierGroups = new HashSet<>();
+    @ManyToOne
+    @JsonIgnoreProperties("couriers")
+    private CourierGroup courierGroup;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -178,54 +173,30 @@ public class Courier implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public Set<CourierChannel> getCourierChannels() {
-        return courierChannels;
+    public CourierChannel getCourierChannel() {
+        return courierChannel;
     }
 
-    public Courier courierChannels(Set<CourierChannel> courierChannels) {
-        this.courierChannels = courierChannels;
+    public Courier courierChannel(CourierChannel courierChannel) {
+        this.courierChannel = courierChannel;
         return this;
     }
 
-    public Courier addCourierChannel(CourierChannel courierChannel) {
-        this.courierChannels.add(courierChannel);
-        courierChannel.setCourier(this);
+    public void setCourierChannel(CourierChannel courierChannel) {
+        this.courierChannel = courierChannel;
+    }
+
+    public CourierGroup getCourierGroup() {
+        return courierGroup;
+    }
+
+    public Courier courierGroup(CourierGroup courierGroup) {
+        this.courierGroup = courierGroup;
         return this;
     }
 
-    public Courier removeCourierChannel(CourierChannel courierChannel) {
-        this.courierChannels.remove(courierChannel);
-        courierChannel.setCourier(null);
-        return this;
-    }
-
-    public void setCourierChannels(Set<CourierChannel> courierChannels) {
-        this.courierChannels = courierChannels;
-    }
-
-    public Set<CourierGroup> getCourierGroups() {
-        return courierGroups;
-    }
-
-    public Courier courierGroups(Set<CourierGroup> courierGroups) {
-        this.courierGroups = courierGroups;
-        return this;
-    }
-
-    public Courier addCourierGroup(CourierGroup courierGroup) {
-        this.courierGroups.add(courierGroup);
-        courierGroup.getCouriers().add(this);
-        return this;
-    }
-
-    public Courier removeCourierGroup(CourierGroup courierGroup) {
-        this.courierGroups.remove(courierGroup);
-        courierGroup.getCouriers().remove(this);
-        return this;
-    }
-
-    public void setCourierGroups(Set<CourierGroup> courierGroups) {
-        this.courierGroups = courierGroups;
+    public void setCourierGroup(CourierGroup courierGroup) {
+        this.courierGroup = courierGroup;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

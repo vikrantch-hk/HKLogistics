@@ -42,18 +42,16 @@
     ],
     "relationships": [
         {
-            "relationshipType": "one-to-many",
             "relationshipName": "courierChannel",
             "otherEntityName": "courierChannel",
-            "otherEntityRelationshipName": "courier"
+            "relationshipType": "many-to-one",
+            "otherEntityField": "id"
         },
         {
-            "relationshipType": "many-to-many",
-            "otherEntityRelationshipName": "courier",
+            "relationshipType": "many-to-one",
             "relationshipName": "courierGroup",
             "otherEntityName": "courierGroup",
-            "otherEntityField": "name",
-            "ownerSide": true
+            "otherEntityField": "name"
         }
     ],
     "changelogDate": "20180620165218",
@@ -61,7 +59,7 @@
     "dto": "mapstruct",
     "pagination": "pagination",
     "service": "serviceImpl",
-    "jpaMetamodelFiltering": false,
+    "jpaMetamodelFiltering": true,
     "fluentMethods": true,
     "clientRootFolder": "",
     "applications": "*"

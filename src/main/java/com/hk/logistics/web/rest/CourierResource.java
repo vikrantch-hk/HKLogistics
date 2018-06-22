@@ -6,6 +6,8 @@ import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.web.rest.util.PaginationUtil;
 import com.hk.logistics.service.dto.CourierDTO;
+import com.hk.logistics.service.dto.CourierCriteria;
+import com.hk.logistics.service.CourierQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +41,11 @@ public class CourierResource {
 
     private final CourierService courierService;
 
-    public CourierResource(CourierService courierService) {
+    private final CourierQueryService courierQueryService;
+
+    public CourierResource(CourierService courierService, CourierQueryService courierQueryService) {
         this.courierService = courierService;
+        this.courierQueryService = courierQueryService;
     }
 
     /**
@@ -89,20 +94,15 @@ public class CourierResource {
      * GET  /couriers : get all the couriers.
      *
      * @param pageable the pagination information
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many)
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of couriers in body
      */
     @GetMapping("/couriers")
     @Timed
-    public ResponseEntity<List<CourierDTO>> getAllCouriers(Pageable pageable, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
-        log.debug("REST request to get a page of Couriers");
-        Page<CourierDTO> page;
-        if (eagerload) {
-            page = courierService.findAllWithEagerRelationships(pageable);
-        } else {
-            page = courierService.findAll(pageable);
-        }
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, String.format("/api/couriers?eagerload=%b", eagerload));
+    public ResponseEntity<List<CourierDTO>> getAllCouriers(CourierCriteria criteria, Pageable pageable) {
+        log.debug("REST request to get Couriers by criteria: {}", criteria);
+        Page<CourierDTO> page = courierQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/couriers");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 

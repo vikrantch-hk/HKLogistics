@@ -124,16 +124,11 @@ entity PincodeCourierMapping {
 entity PincodeRegionZone {
 }
 
-relationship ManyToMany {
-	//Courier{courierChannel(name)} to CourierChannel{courier(name)},
-    Courier{courierGroup(name)} to CourierGroup{courier(name)}
-}
 relationship OneToMany {
   //new relationship
-	CourierChannel{vendorWHCourierMapping} to VendorWHCourierMapping{courierChannel}
-	Channel{courierChannel} to CourierChannel{channel(name)}
-	Courier{courierChannel} to CourierChannel{courier(name)}
-	
+	CourierChannel{vendorWHCourierMapping} to VendorWHCourierMapping{courierChannel},
+	Channel{courierChannel} to CourierChannel{channel(name)},
+	CourierChannel{courier(name)} to Courier
 }
 
 relationship ManyToOne {
@@ -152,7 +147,8 @@ relationship ManyToOne {
     PincodeRegionZone{sourceDestinationMapping} to SourceDestinationMapping,
     Awb{courier(name)} to Courier,
     Awb{vendorWHCourierMapping} to VendorWHCourierMapping,
-    Awb{awbStatus(status)} to AwbStatus
+    Awb{awbStatus(status)} to AwbStatus,
+	Courier{courierGroup(name)} to CourierGroup{courier(name)}
 }
 
 // Set pagination options
@@ -164,3 +160,5 @@ dto * with mapstruct
 service all with serviceImpl
 // Set an angular suffix
 //angularSuffix * with mySuffix
+
+filter *

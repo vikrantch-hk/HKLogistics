@@ -38,6 +38,8 @@
             <th jhiSortBy="hkShipping"><span>Hk Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="vendorShipping"><span>Vendor Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="reversePickup"><span>Reverse Pickup</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="courierChannelId"><span>Courier Channel</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="courierGroupName"><span>Courier Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -52,6 +54,16 @@
                 <td>{{courier.hkShipping}}</td>
                 <td>{{courier.vendorShipping}}</td>
                 <td>{{courier.reversePickup}}</td>
+                <td>
+                    <div *ngIf="courier.courierChannelId">
+                        <a [routerLink]="['../courier-channel', courier.courierChannelId , 'view' ]" >{{courier.courierChannelId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="courier.courierGroupId">
+                        <a [routerLink]="['../courier-group', courier.courierGroupId , 'view' ]" >{{courier.courierGroupName}}</a>
+                    </div>
+                </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

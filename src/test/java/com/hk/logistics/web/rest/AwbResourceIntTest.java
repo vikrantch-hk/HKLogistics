@@ -3,12 +3,17 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Awb;
+import com.hk.logistics.domain.Courier;
+import com.hk.logistics.domain.VendorWHCourierMapping;
+import com.hk.logistics.domain.AwbStatus;
 import com.hk.logistics.repository.AwbRepository;
 import com.hk.logistics.repository.search.AwbSearchRepository;
 import com.hk.logistics.service.AwbService;
 import com.hk.logistics.service.dto.AwbDTO;
 import com.hk.logistics.service.mapper.AwbMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.AwbCriteria;
+import com.hk.logistics.service.AwbQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -89,6 +94,9 @@ public class AwbResourceIntTest {
     private AwbSearchRepository mockAwbSearchRepository;
 
     @Autowired
+    private AwbQueryService awbQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -107,7 +115,7 @@ public class AwbResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final AwbResource awbResource = new AwbResource(awbService);
+        final AwbResource awbResource = new AwbResource(awbService, awbQueryService);
         this.restAwbMockMvc = MockMvcBuilders.standaloneSetup(awbResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -324,6 +332,391 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$.returnAwbBarCode").value(DEFAULT_RETURN_AWB_BAR_CODE.toString()))
             .andExpect(jsonPath("$.isBrightAwb").value(DEFAULT_IS_BRIGHT_AWB.booleanValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbNumber equals to DEFAULT_AWB_NUMBER
+        defaultAwbShouldBeFound("awbNumber.equals=" + DEFAULT_AWB_NUMBER);
+
+        // Get all the awbList where awbNumber equals to UPDATED_AWB_NUMBER
+        defaultAwbShouldNotBeFound("awbNumber.equals=" + UPDATED_AWB_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbNumber in DEFAULT_AWB_NUMBER or UPDATED_AWB_NUMBER
+        defaultAwbShouldBeFound("awbNumber.in=" + DEFAULT_AWB_NUMBER + "," + UPDATED_AWB_NUMBER);
+
+        // Get all the awbList where awbNumber equals to UPDATED_AWB_NUMBER
+        defaultAwbShouldNotBeFound("awbNumber.in=" + UPDATED_AWB_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbNumber is not null
+        defaultAwbShouldBeFound("awbNumber.specified=true");
+
+        // Get all the awbList where awbNumber is null
+        defaultAwbShouldNotBeFound("awbNumber.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbBarCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbBarCode equals to DEFAULT_AWB_BAR_CODE
+        defaultAwbShouldBeFound("awbBarCode.equals=" + DEFAULT_AWB_BAR_CODE);
+
+        // Get all the awbList where awbBarCode equals to UPDATED_AWB_BAR_CODE
+        defaultAwbShouldNotBeFound("awbBarCode.equals=" + UPDATED_AWB_BAR_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbBarCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbBarCode in DEFAULT_AWB_BAR_CODE or UPDATED_AWB_BAR_CODE
+        defaultAwbShouldBeFound("awbBarCode.in=" + DEFAULT_AWB_BAR_CODE + "," + UPDATED_AWB_BAR_CODE);
+
+        // Get all the awbList where awbBarCode equals to UPDATED_AWB_BAR_CODE
+        defaultAwbShouldNotBeFound("awbBarCode.in=" + UPDATED_AWB_BAR_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbBarCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where awbBarCode is not null
+        defaultAwbShouldBeFound("awbBarCode.specified=true");
+
+        // Get all the awbList where awbBarCode is null
+        defaultAwbShouldNotBeFound("awbBarCode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCodIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where cod equals to DEFAULT_COD
+        defaultAwbShouldBeFound("cod.equals=" + DEFAULT_COD);
+
+        // Get all the awbList where cod equals to UPDATED_COD
+        defaultAwbShouldNotBeFound("cod.equals=" + UPDATED_COD);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCodIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where cod in DEFAULT_COD or UPDATED_COD
+        defaultAwbShouldBeFound("cod.in=" + DEFAULT_COD + "," + UPDATED_COD);
+
+        // Get all the awbList where cod equals to UPDATED_COD
+        defaultAwbShouldNotBeFound("cod.in=" + UPDATED_COD);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCodIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where cod is not null
+        defaultAwbShouldBeFound("cod.specified=true");
+
+        // Get all the awbList where cod is null
+        defaultAwbShouldNotBeFound("cod.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCreateDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where createDate equals to DEFAULT_CREATE_DATE
+        defaultAwbShouldBeFound("createDate.equals=" + DEFAULT_CREATE_DATE);
+
+        // Get all the awbList where createDate equals to UPDATED_CREATE_DATE
+        defaultAwbShouldNotBeFound("createDate.equals=" + UPDATED_CREATE_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCreateDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where createDate in DEFAULT_CREATE_DATE or UPDATED_CREATE_DATE
+        defaultAwbShouldBeFound("createDate.in=" + DEFAULT_CREATE_DATE + "," + UPDATED_CREATE_DATE);
+
+        // Get all the awbList where createDate equals to UPDATED_CREATE_DATE
+        defaultAwbShouldNotBeFound("createDate.in=" + UPDATED_CREATE_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCreateDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where createDate is not null
+        defaultAwbShouldBeFound("createDate.specified=true");
+
+        // Get all the awbList where createDate is null
+        defaultAwbShouldNotBeFound("createDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCreateDateIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where createDate greater than or equals to DEFAULT_CREATE_DATE
+        defaultAwbShouldBeFound("createDate.greaterOrEqualThan=" + DEFAULT_CREATE_DATE);
+
+        // Get all the awbList where createDate greater than or equals to UPDATED_CREATE_DATE
+        defaultAwbShouldNotBeFound("createDate.greaterOrEqualThan=" + UPDATED_CREATE_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCreateDateIsLessThanSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where createDate less than or equals to DEFAULT_CREATE_DATE
+        defaultAwbShouldNotBeFound("createDate.lessThan=" + DEFAULT_CREATE_DATE);
+
+        // Get all the awbList where createDate less than or equals to UPDATED_CREATE_DATE
+        defaultAwbShouldBeFound("createDate.lessThan=" + UPDATED_CREATE_DATE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbNumber equals to DEFAULT_RETURN_AWB_NUMBER
+        defaultAwbShouldBeFound("returnAwbNumber.equals=" + DEFAULT_RETURN_AWB_NUMBER);
+
+        // Get all the awbList where returnAwbNumber equals to UPDATED_RETURN_AWB_NUMBER
+        defaultAwbShouldNotBeFound("returnAwbNumber.equals=" + UPDATED_RETURN_AWB_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbNumber in DEFAULT_RETURN_AWB_NUMBER or UPDATED_RETURN_AWB_NUMBER
+        defaultAwbShouldBeFound("returnAwbNumber.in=" + DEFAULT_RETURN_AWB_NUMBER + "," + UPDATED_RETURN_AWB_NUMBER);
+
+        // Get all the awbList where returnAwbNumber equals to UPDATED_RETURN_AWB_NUMBER
+        defaultAwbShouldNotBeFound("returnAwbNumber.in=" + UPDATED_RETURN_AWB_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbNumber is not null
+        defaultAwbShouldBeFound("returnAwbNumber.specified=true");
+
+        // Get all the awbList where returnAwbNumber is null
+        defaultAwbShouldNotBeFound("returnAwbNumber.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbBarCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbBarCode equals to DEFAULT_RETURN_AWB_BAR_CODE
+        defaultAwbShouldBeFound("returnAwbBarCode.equals=" + DEFAULT_RETURN_AWB_BAR_CODE);
+
+        // Get all the awbList where returnAwbBarCode equals to UPDATED_RETURN_AWB_BAR_CODE
+        defaultAwbShouldNotBeFound("returnAwbBarCode.equals=" + UPDATED_RETURN_AWB_BAR_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbBarCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbBarCode in DEFAULT_RETURN_AWB_BAR_CODE or UPDATED_RETURN_AWB_BAR_CODE
+        defaultAwbShouldBeFound("returnAwbBarCode.in=" + DEFAULT_RETURN_AWB_BAR_CODE + "," + UPDATED_RETURN_AWB_BAR_CODE);
+
+        // Get all the awbList where returnAwbBarCode equals to UPDATED_RETURN_AWB_BAR_CODE
+        defaultAwbShouldNotBeFound("returnAwbBarCode.in=" + UPDATED_RETURN_AWB_BAR_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByReturnAwbBarCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where returnAwbBarCode is not null
+        defaultAwbShouldBeFound("returnAwbBarCode.specified=true");
+
+        // Get all the awbList where returnAwbBarCode is null
+        defaultAwbShouldNotBeFound("returnAwbBarCode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByIsBrightAwbIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where isBrightAwb equals to DEFAULT_IS_BRIGHT_AWB
+        defaultAwbShouldBeFound("isBrightAwb.equals=" + DEFAULT_IS_BRIGHT_AWB);
+
+        // Get all the awbList where isBrightAwb equals to UPDATED_IS_BRIGHT_AWB
+        defaultAwbShouldNotBeFound("isBrightAwb.equals=" + UPDATED_IS_BRIGHT_AWB);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByIsBrightAwbIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where isBrightAwb in DEFAULT_IS_BRIGHT_AWB or UPDATED_IS_BRIGHT_AWB
+        defaultAwbShouldBeFound("isBrightAwb.in=" + DEFAULT_IS_BRIGHT_AWB + "," + UPDATED_IS_BRIGHT_AWB);
+
+        // Get all the awbList where isBrightAwb equals to UPDATED_IS_BRIGHT_AWB
+        defaultAwbShouldNotBeFound("isBrightAwb.in=" + UPDATED_IS_BRIGHT_AWB);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByIsBrightAwbIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where isBrightAwb is not null
+        defaultAwbShouldBeFound("isBrightAwb.specified=true");
+
+        // Get all the awbList where isBrightAwb is null
+        defaultAwbShouldNotBeFound("isBrightAwb.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Courier courier = CourierResourceIntTest.createEntity(em);
+        em.persist(courier);
+        em.flush();
+        awb.setCourier(courier);
+        awbRepository.saveAndFlush(awb);
+        Long courierId = courier.getId();
+
+        // Get all the awbList where courier equals to courierId
+        defaultAwbShouldBeFound("courierId.equals=" + courierId);
+
+        // Get all the awbList where courier equals to courierId + 1
+        defaultAwbShouldNotBeFound("courierId.equals=" + (courierId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllAwbsByVendorWHCourierMappingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        VendorWHCourierMapping vendorWHCourierMapping = VendorWHCourierMappingResourceIntTest.createEntity(em);
+        em.persist(vendorWHCourierMapping);
+        em.flush();
+        awb.setVendorWHCourierMapping(vendorWHCourierMapping);
+        awbRepository.saveAndFlush(awb);
+        Long vendorWHCourierMappingId = vendorWHCourierMapping.getId();
+
+        // Get all the awbList where vendorWHCourierMapping equals to vendorWHCourierMappingId
+        defaultAwbShouldBeFound("vendorWHCourierMappingId.equals=" + vendorWHCourierMappingId);
+
+        // Get all the awbList where vendorWHCourierMapping equals to vendorWHCourierMappingId + 1
+        defaultAwbShouldNotBeFound("vendorWHCourierMappingId.equals=" + (vendorWHCourierMappingId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllAwbsByAwbStatusIsEqualToSomething() throws Exception {
+        // Initialize the database
+        AwbStatus awbStatus = AwbStatusResourceIntTest.createEntity(em);
+        em.persist(awbStatus);
+        em.flush();
+        awb.setAwbStatus(awbStatus);
+        awbRepository.saveAndFlush(awb);
+        Long awbStatusId = awbStatus.getId();
+
+        // Get all the awbList where awbStatus equals to awbStatusId
+        defaultAwbShouldBeFound("awbStatusId.equals=" + awbStatusId);
+
+        // Get all the awbList where awbStatus equals to awbStatusId + 1
+        defaultAwbShouldNotBeFound("awbStatusId.equals=" + (awbStatusId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultAwbShouldBeFound(String filter) throws Exception {
+        restAwbMockMvc.perform(get("/api/awbs?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(awb.getId().intValue())))
+            .andExpect(jsonPath("$.[*].awbNumber").value(hasItem(DEFAULT_AWB_NUMBER.toString())))
+            .andExpect(jsonPath("$.[*].awbBarCode").value(hasItem(DEFAULT_AWB_BAR_CODE.toString())))
+            .andExpect(jsonPath("$.[*].cod").value(hasItem(DEFAULT_COD.booleanValue())))
+            .andExpect(jsonPath("$.[*].createDate").value(hasItem(DEFAULT_CREATE_DATE.toString())))
+            .andExpect(jsonPath("$.[*].returnAwbNumber").value(hasItem(DEFAULT_RETURN_AWB_NUMBER.toString())))
+            .andExpect(jsonPath("$.[*].returnAwbBarCode").value(hasItem(DEFAULT_RETURN_AWB_BAR_CODE.toString())))
+            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultAwbShouldNotBeFound(String filter) throws Exception {
+        restAwbMockMvc.perform(get("/api/awbs?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingAwb() throws Exception {

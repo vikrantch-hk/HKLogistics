@@ -3,12 +3,17 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.CourierChannel;
+import com.hk.logistics.domain.VendorWHCourierMapping;
+import com.hk.logistics.domain.Courier;
+import com.hk.logistics.domain.Channel;
 import com.hk.logistics.repository.CourierChannelRepository;
 import com.hk.logistics.repository.search.CourierChannelSearchRepository;
 import com.hk.logistics.service.CourierChannelService;
 import com.hk.logistics.service.dto.CourierChannelDTO;
 import com.hk.logistics.service.mapper.CourierChannelMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CourierChannelCriteria;
+import com.hk.logistics.service.CourierChannelQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +80,9 @@ public class CourierChannelResourceIntTest {
     private CourierChannelSearchRepository mockCourierChannelSearchRepository;
 
     @Autowired
+    private CourierChannelQueryService courierChannelQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -93,7 +101,7 @@ public class CourierChannelResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CourierChannelResource courierChannelResource = new CourierChannelResource(courierChannelService);
+        final CourierChannelResource courierChannelResource = new CourierChannelResource(courierChannelService, courierChannelQueryService);
         this.restCourierChannelMockMvc = MockMvcBuilders.standaloneSetup(courierChannelResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -199,6 +207,204 @@ public class CourierChannelResourceIntTest {
             .andExpect(jsonPath("$.maxWeight").value(DEFAULT_MAX_WEIGHT.doubleValue()))
             .andExpect(jsonPath("$.natureOfProduct").value(DEFAULT_NATURE_OF_PRODUCT.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMinWeightIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where minWeight equals to DEFAULT_MIN_WEIGHT
+        defaultCourierChannelShouldBeFound("minWeight.equals=" + DEFAULT_MIN_WEIGHT);
+
+        // Get all the courierChannelList where minWeight equals to UPDATED_MIN_WEIGHT
+        defaultCourierChannelShouldNotBeFound("minWeight.equals=" + UPDATED_MIN_WEIGHT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMinWeightIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where minWeight in DEFAULT_MIN_WEIGHT or UPDATED_MIN_WEIGHT
+        defaultCourierChannelShouldBeFound("minWeight.in=" + DEFAULT_MIN_WEIGHT + "," + UPDATED_MIN_WEIGHT);
+
+        // Get all the courierChannelList where minWeight equals to UPDATED_MIN_WEIGHT
+        defaultCourierChannelShouldNotBeFound("minWeight.in=" + UPDATED_MIN_WEIGHT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMinWeightIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where minWeight is not null
+        defaultCourierChannelShouldBeFound("minWeight.specified=true");
+
+        // Get all the courierChannelList where minWeight is null
+        defaultCourierChannelShouldNotBeFound("minWeight.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMaxWeightIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where maxWeight equals to DEFAULT_MAX_WEIGHT
+        defaultCourierChannelShouldBeFound("maxWeight.equals=" + DEFAULT_MAX_WEIGHT);
+
+        // Get all the courierChannelList where maxWeight equals to UPDATED_MAX_WEIGHT
+        defaultCourierChannelShouldNotBeFound("maxWeight.equals=" + UPDATED_MAX_WEIGHT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMaxWeightIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where maxWeight in DEFAULT_MAX_WEIGHT or UPDATED_MAX_WEIGHT
+        defaultCourierChannelShouldBeFound("maxWeight.in=" + DEFAULT_MAX_WEIGHT + "," + UPDATED_MAX_WEIGHT);
+
+        // Get all the courierChannelList where maxWeight equals to UPDATED_MAX_WEIGHT
+        defaultCourierChannelShouldNotBeFound("maxWeight.in=" + UPDATED_MAX_WEIGHT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByMaxWeightIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where maxWeight is not null
+        defaultCourierChannelShouldBeFound("maxWeight.specified=true");
+
+        // Get all the courierChannelList where maxWeight is null
+        defaultCourierChannelShouldNotBeFound("maxWeight.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByNatureOfProductIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where natureOfProduct equals to DEFAULT_NATURE_OF_PRODUCT
+        defaultCourierChannelShouldBeFound("natureOfProduct.equals=" + DEFAULT_NATURE_OF_PRODUCT);
+
+        // Get all the courierChannelList where natureOfProduct equals to UPDATED_NATURE_OF_PRODUCT
+        defaultCourierChannelShouldNotBeFound("natureOfProduct.equals=" + UPDATED_NATURE_OF_PRODUCT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByNatureOfProductIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where natureOfProduct in DEFAULT_NATURE_OF_PRODUCT or UPDATED_NATURE_OF_PRODUCT
+        defaultCourierChannelShouldBeFound("natureOfProduct.in=" + DEFAULT_NATURE_OF_PRODUCT + "," + UPDATED_NATURE_OF_PRODUCT);
+
+        // Get all the courierChannelList where natureOfProduct equals to UPDATED_NATURE_OF_PRODUCT
+        defaultCourierChannelShouldNotBeFound("natureOfProduct.in=" + UPDATED_NATURE_OF_PRODUCT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByNatureOfProductIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierChannelRepository.saveAndFlush(courierChannel);
+
+        // Get all the courierChannelList where natureOfProduct is not null
+        defaultCourierChannelShouldBeFound("natureOfProduct.specified=true");
+
+        // Get all the courierChannelList where natureOfProduct is null
+        defaultCourierChannelShouldNotBeFound("natureOfProduct.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByVendorWHCourierMappingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        VendorWHCourierMapping vendorWHCourierMapping = VendorWHCourierMappingResourceIntTest.createEntity(em);
+        em.persist(vendorWHCourierMapping);
+        em.flush();
+        courierChannel.addVendorWHCourierMapping(vendorWHCourierMapping);
+        courierChannelRepository.saveAndFlush(courierChannel);
+        Long vendorWHCourierMappingId = vendorWHCourierMapping.getId();
+
+        // Get all the courierChannelList where vendorWHCourierMapping equals to vendorWHCourierMappingId
+        defaultCourierChannelShouldBeFound("vendorWHCourierMappingId.equals=" + vendorWHCourierMappingId);
+
+        // Get all the courierChannelList where vendorWHCourierMapping equals to vendorWHCourierMappingId + 1
+        defaultCourierChannelShouldNotBeFound("vendorWHCourierMappingId.equals=" + (vendorWHCourierMappingId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Courier courier = CourierResourceIntTest.createEntity(em);
+        em.persist(courier);
+        em.flush();
+        courierChannel.addCourier(courier);
+        courierChannelRepository.saveAndFlush(courierChannel);
+        Long courierId = courier.getId();
+
+        // Get all the courierChannelList where courier equals to courierId
+        defaultCourierChannelShouldBeFound("courierId.equals=" + courierId);
+
+        // Get all the courierChannelList where courier equals to courierId + 1
+        defaultCourierChannelShouldNotBeFound("courierId.equals=" + (courierId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByChannelIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Channel channel = ChannelResourceIntTest.createEntity(em);
+        em.persist(channel);
+        em.flush();
+        courierChannel.setChannel(channel);
+        courierChannelRepository.saveAndFlush(courierChannel);
+        Long channelId = channel.getId();
+
+        // Get all the courierChannelList where channel equals to channelId
+        defaultCourierChannelShouldBeFound("channelId.equals=" + channelId);
+
+        // Get all the courierChannelList where channel equals to channelId + 1
+        defaultCourierChannelShouldNotBeFound("channelId.equals=" + (channelId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCourierChannelShouldBeFound(String filter) throws Exception {
+        restCourierChannelMockMvc.perform(get("/api/courier-channels?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(courierChannel.getId().intValue())))
+            .andExpect(jsonPath("$.[*].minWeight").value(hasItem(DEFAULT_MIN_WEIGHT.doubleValue())))
+            .andExpect(jsonPath("$.[*].maxWeight").value(hasItem(DEFAULT_MAX_WEIGHT.doubleValue())))
+            .andExpect(jsonPath("$.[*].natureOfProduct").value(hasItem(DEFAULT_NATURE_OF_PRODUCT.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCourierChannelShouldNotBeFound(String filter) throws Exception {
+        restCourierChannelMockMvc.perform(get("/api/courier-channels?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCourierChannel() throws Exception {

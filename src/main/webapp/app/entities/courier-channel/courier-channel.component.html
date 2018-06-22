@@ -34,7 +34,6 @@
             <th><span>Max Weight</span></th>
             <th><span>Nature Of Product</span></th>
             <th><span>Channel</span></th>
-            <th><span>Courier</span></th>
             <th></th>
             </tr>
             </thead>
@@ -47,11 +46,6 @@
                 <td>
                     <div *ngIf="courierChannel.channelId">
                         <a [routerLink]="['../channel', courierChannel.channelId , 'view' ]" >{{courierChannel.channelName}}</a>
-                    </div>
-                </td>
-                <td>
-                    <div *ngIf="courierChannel.courierId">
-                        <a [routerLink]="['../courier', courierChannel.courierId , 'view' ]" >{{courierChannel.courierName}}</a>
                     </div>
                 </td>
                 <td class="text-right">

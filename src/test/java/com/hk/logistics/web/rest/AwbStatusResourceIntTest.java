@@ -9,6 +9,8 @@ import com.hk.logistics.service.AwbStatusService;
 import com.hk.logistics.service.dto.AwbStatusDTO;
 import com.hk.logistics.service.mapper.AwbStatusMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.AwbStatusCriteria;
+import com.hk.logistics.service.AwbStatusQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +71,9 @@ public class AwbStatusResourceIntTest {
     private AwbStatusSearchRepository mockAwbStatusSearchRepository;
 
     @Autowired
+    private AwbStatusQueryService awbStatusQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -87,7 +92,7 @@ public class AwbStatusResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final AwbStatusResource awbStatusResource = new AwbStatusResource(awbStatusService);
+        final AwbStatusResource awbStatusResource = new AwbStatusResource(awbStatusService, awbStatusQueryService);
         this.restAwbStatusMockMvc = MockMvcBuilders.standaloneSetup(awbStatusResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -185,6 +190,67 @@ public class AwbStatusResourceIntTest {
             .andExpect(jsonPath("$.id").value(awbStatus.getId().intValue()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllAwbStatusesByStatusIsEqualToSomething() throws Exception {
+        // Initialize the database
+        awbStatusRepository.saveAndFlush(awbStatus);
+
+        // Get all the awbStatusList where status equals to DEFAULT_STATUS
+        defaultAwbStatusShouldBeFound("status.equals=" + DEFAULT_STATUS);
+
+        // Get all the awbStatusList where status equals to UPDATED_STATUS
+        defaultAwbStatusShouldNotBeFound("status.equals=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbStatusesByStatusIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbStatusRepository.saveAndFlush(awbStatus);
+
+        // Get all the awbStatusList where status in DEFAULT_STATUS or UPDATED_STATUS
+        defaultAwbStatusShouldBeFound("status.in=" + DEFAULT_STATUS + "," + UPDATED_STATUS);
+
+        // Get all the awbStatusList where status equals to UPDATED_STATUS
+        defaultAwbStatusShouldNotBeFound("status.in=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbStatusesByStatusIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbStatusRepository.saveAndFlush(awbStatus);
+
+        // Get all the awbStatusList where status is not null
+        defaultAwbStatusShouldBeFound("status.specified=true");
+
+        // Get all the awbStatusList where status is null
+        defaultAwbStatusShouldNotBeFound("status.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultAwbStatusShouldBeFound(String filter) throws Exception {
+        restAwbStatusMockMvc.perform(get("/api/awb-statuses?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(awbStatus.getId().intValue())))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultAwbStatusShouldNotBeFound(String filter) throws Exception {
+        restAwbStatusMockMvc.perform(get("/api/awb-statuses?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingAwbStatus() throws Exception {

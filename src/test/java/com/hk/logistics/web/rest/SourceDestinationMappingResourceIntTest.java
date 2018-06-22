@@ -9,6 +9,8 @@ import com.hk.logistics.service.SourceDestinationMappingService;
 import com.hk.logistics.service.dto.SourceDestinationMappingDTO;
 import com.hk.logistics.service.mapper.SourceDestinationMappingMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.SourceDestinationMappingCriteria;
+import com.hk.logistics.service.SourceDestinationMappingQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +74,9 @@ public class SourceDestinationMappingResourceIntTest {
     private SourceDestinationMappingSearchRepository mockSourceDestinationMappingSearchRepository;
 
     @Autowired
+    private SourceDestinationMappingQueryService sourceDestinationMappingQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -90,7 +95,7 @@ public class SourceDestinationMappingResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final SourceDestinationMappingResource sourceDestinationMappingResource = new SourceDestinationMappingResource(sourceDestinationMappingService);
+        final SourceDestinationMappingResource sourceDestinationMappingResource = new SourceDestinationMappingResource(sourceDestinationMappingService, sourceDestinationMappingQueryService);
         this.restSourceDestinationMappingMockMvc = MockMvcBuilders.standaloneSetup(sourceDestinationMappingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -230,6 +235,107 @@ public class SourceDestinationMappingResourceIntTest {
             .andExpect(jsonPath("$.sourcePincode").value(DEFAULT_SOURCE_PINCODE.toString()))
             .andExpect(jsonPath("$.destinationPincode").value(DEFAULT_DESTINATION_PINCODE.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsBySourcePincodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where sourcePincode equals to DEFAULT_SOURCE_PINCODE
+        defaultSourceDestinationMappingShouldBeFound("sourcePincode.equals=" + DEFAULT_SOURCE_PINCODE);
+
+        // Get all the sourceDestinationMappingList where sourcePincode equals to UPDATED_SOURCE_PINCODE
+        defaultSourceDestinationMappingShouldNotBeFound("sourcePincode.equals=" + UPDATED_SOURCE_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsBySourcePincodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where sourcePincode in DEFAULT_SOURCE_PINCODE or UPDATED_SOURCE_PINCODE
+        defaultSourceDestinationMappingShouldBeFound("sourcePincode.in=" + DEFAULT_SOURCE_PINCODE + "," + UPDATED_SOURCE_PINCODE);
+
+        // Get all the sourceDestinationMappingList where sourcePincode equals to UPDATED_SOURCE_PINCODE
+        defaultSourceDestinationMappingShouldNotBeFound("sourcePincode.in=" + UPDATED_SOURCE_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsBySourcePincodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where sourcePincode is not null
+        defaultSourceDestinationMappingShouldBeFound("sourcePincode.specified=true");
+
+        // Get all the sourceDestinationMappingList where sourcePincode is null
+        defaultSourceDestinationMappingShouldNotBeFound("sourcePincode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsByDestinationPincodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where destinationPincode equals to DEFAULT_DESTINATION_PINCODE
+        defaultSourceDestinationMappingShouldBeFound("destinationPincode.equals=" + DEFAULT_DESTINATION_PINCODE);
+
+        // Get all the sourceDestinationMappingList where destinationPincode equals to UPDATED_DESTINATION_PINCODE
+        defaultSourceDestinationMappingShouldNotBeFound("destinationPincode.equals=" + UPDATED_DESTINATION_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsByDestinationPincodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where destinationPincode in DEFAULT_DESTINATION_PINCODE or UPDATED_DESTINATION_PINCODE
+        defaultSourceDestinationMappingShouldBeFound("destinationPincode.in=" + DEFAULT_DESTINATION_PINCODE + "," + UPDATED_DESTINATION_PINCODE);
+
+        // Get all the sourceDestinationMappingList where destinationPincode equals to UPDATED_DESTINATION_PINCODE
+        defaultSourceDestinationMappingShouldNotBeFound("destinationPincode.in=" + UPDATED_DESTINATION_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSourceDestinationMappingsByDestinationPincodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        sourceDestinationMappingRepository.saveAndFlush(sourceDestinationMapping);
+
+        // Get all the sourceDestinationMappingList where destinationPincode is not null
+        defaultSourceDestinationMappingShouldBeFound("destinationPincode.specified=true");
+
+        // Get all the sourceDestinationMappingList where destinationPincode is null
+        defaultSourceDestinationMappingShouldNotBeFound("destinationPincode.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultSourceDestinationMappingShouldBeFound(String filter) throws Exception {
+        restSourceDestinationMappingMockMvc.perform(get("/api/source-destination-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(sourceDestinationMapping.getId().intValue())))
+            .andExpect(jsonPath("$.[*].sourcePincode").value(hasItem(DEFAULT_SOURCE_PINCODE.toString())))
+            .andExpect(jsonPath("$.[*].destinationPincode").value(hasItem(DEFAULT_DESTINATION_PINCODE.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultSourceDestinationMappingShouldNotBeFound(String filter) throws Exception {
+        restSourceDestinationMappingMockMvc.perform(get("/api/source-destination-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingSourceDestinationMapping() throws Exception {

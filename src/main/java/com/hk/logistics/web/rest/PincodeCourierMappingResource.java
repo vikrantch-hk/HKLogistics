@@ -5,6 +5,8 @@ import com.hk.logistics.service.PincodeCourierMappingService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.PincodeCourierMappingDTO;
+import com.hk.logistics.service.dto.PincodeCourierMappingCriteria;
+import com.hk.logistics.service.PincodeCourierMappingQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class PincodeCourierMappingResource {
 
     private final PincodeCourierMappingService pincodeCourierMappingService;
 
-    public PincodeCourierMappingResource(PincodeCourierMappingService pincodeCourierMappingService) {
+    private final PincodeCourierMappingQueryService pincodeCourierMappingQueryService;
+
+    public PincodeCourierMappingResource(PincodeCourierMappingService pincodeCourierMappingService, PincodeCourierMappingQueryService pincodeCourierMappingQueryService) {
         this.pincodeCourierMappingService = pincodeCourierMappingService;
+        this.pincodeCourierMappingQueryService = pincodeCourierMappingQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class PincodeCourierMappingResource {
     /**
      * GET  /pincode-courier-mappings : get all the pincodeCourierMappings.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of pincodeCourierMappings in body
      */
     @GetMapping("/pincode-courier-mappings")
     @Timed
-    public List<PincodeCourierMappingDTO> getAllPincodeCourierMappings() {
-        log.debug("REST request to get all PincodeCourierMappings");
-        return pincodeCourierMappingService.findAll();
+    public ResponseEntity<List<PincodeCourierMappingDTO>> getAllPincodeCourierMappings(PincodeCourierMappingCriteria criteria) {
+        log.debug("REST request to get PincodeCourierMappings by criteria: {}", criteria);
+        List<PincodeCourierMappingDTO> entityList = pincodeCourierMappingQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

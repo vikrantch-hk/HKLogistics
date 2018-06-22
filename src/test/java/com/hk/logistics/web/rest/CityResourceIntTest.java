@@ -9,6 +9,8 @@ import com.hk.logistics.service.CityService;
 import com.hk.logistics.service.dto.CityDTO;
 import com.hk.logistics.service.mapper.CityMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CityCriteria;
+import com.hk.logistics.service.CityQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +71,9 @@ public class CityResourceIntTest {
     private CitySearchRepository mockCitySearchRepository;
 
     @Autowired
+    private CityQueryService cityQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -87,7 +92,7 @@ public class CityResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CityResource cityResource = new CityResource(cityService);
+        final CityResource cityResource = new CityResource(cityService, cityQueryService);
         this.restCityMockMvc = MockMvcBuilders.standaloneSetup(cityResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -204,6 +209,67 @@ public class CityResourceIntTest {
             .andExpect(jsonPath("$.id").value(city.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCitiesByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cityRepository.saveAndFlush(city);
+
+        // Get all the cityList where name equals to DEFAULT_NAME
+        defaultCityShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the cityList where name equals to UPDATED_NAME
+        defaultCityShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCitiesByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        cityRepository.saveAndFlush(city);
+
+        // Get all the cityList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultCityShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the cityList where name equals to UPDATED_NAME
+        defaultCityShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCitiesByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cityRepository.saveAndFlush(city);
+
+        // Get all the cityList where name is not null
+        defaultCityShouldBeFound("name.specified=true");
+
+        // Get all the cityList where name is null
+        defaultCityShouldNotBeFound("name.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCityShouldBeFound(String filter) throws Exception {
+        restCityMockMvc.perform(get("/api/cities?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(city.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCityShouldNotBeFound(String filter) throws Exception {
+        restCityMockMvc.perform(get("/api/cities?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCity() throws Exception {

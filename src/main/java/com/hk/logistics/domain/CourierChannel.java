@@ -41,13 +41,13 @@ public class CourierChannel implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<VendorWHCourierMapping> vendorWHCourierMappings = new HashSet<>();
 
-    @ManyToOne
-    @JsonIgnoreProperties("courierChannels")
-    private Channel channel;
+    @OneToMany(mappedBy = "courierChannel")
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<Courier> couriers = new HashSet<>();
 
     @ManyToOne
     @JsonIgnoreProperties("courierChannels")
-    private Courier courier;
+    private Channel channel;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -122,6 +122,31 @@ public class CourierChannel implements Serializable {
         this.vendorWHCourierMappings = vendorWHCourierMappings;
     }
 
+    public Set<Courier> getCouriers() {
+        return couriers;
+    }
+
+    public CourierChannel couriers(Set<Courier> couriers) {
+        this.couriers = couriers;
+        return this;
+    }
+
+    public CourierChannel addCourier(Courier courier) {
+        this.couriers.add(courier);
+        courier.setCourierChannel(this);
+        return this;
+    }
+
+    public CourierChannel removeCourier(Courier courier) {
+        this.couriers.remove(courier);
+        courier.setCourierChannel(null);
+        return this;
+    }
+
+    public void setCouriers(Set<Courier> couriers) {
+        this.couriers = couriers;
+    }
+
     public Channel getChannel() {
         return channel;
     }
@@ -133,19 +158,6 @@ public class CourierChannel implements Serializable {
 
     public void setChannel(Channel channel) {
         this.channel = channel;
-    }
-
-    public Courier getCourier() {
-        return courier;
-    }
-
-    public CourierChannel courier(Courier courier) {
-        this.courier = courier;
-        return this;
-    }
-
-    public void setCourier(Courier courier) {
-        this.courier = courier;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

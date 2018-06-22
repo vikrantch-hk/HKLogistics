@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PincodeRegionZoneRepository extends JpaRepository<PincodeRegionZone, Long> {
+public interface PincodeRegionZoneRepository extends JpaRepository<PincodeRegionZone, Long>, JpaSpecificationExecutor<PincodeRegionZone> {
 
 }

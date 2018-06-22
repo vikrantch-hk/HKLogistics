@@ -41,10 +41,4 @@ export class RegionTypeService {
         const options = createRequestOption(req);
         return this.http.get<IRegionType[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
     }
-
-    public uploadFile(fileToUpload: File) {
-  const _formData = new FormData();
-  _formData.append('file', fileToUpload, fileToUpload.name);
-  return this.http.post<IRegionType>(this.resourceUrl + '/upload', _formData, { observe: 'response' });
-}
 }

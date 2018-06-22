@@ -5,6 +5,8 @@ import com.hk.logistics.service.CountryService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.CountryDTO;
+import com.hk.logistics.service.dto.CountryCriteria;
+import com.hk.logistics.service.CountryQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class CountryResource {
 
     private final CountryService countryService;
 
-    public CountryResource(CountryService countryService) {
+    private final CountryQueryService countryQueryService;
+
+    public CountryResource(CountryService countryService, CountryQueryService countryQueryService) {
         this.countryService = countryService;
+        this.countryQueryService = countryQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class CountryResource {
     /**
      * GET  /countries : get all the countries.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of countries in body
      */
     @GetMapping("/countries")
     @Timed
-    public List<CountryDTO> getAllCountries() {
-        log.debug("REST request to get all Countries");
-        return countryService.findAll();
+    public ResponseEntity<List<CountryDTO>> getAllCountries(CountryCriteria criteria) {
+        log.debug("REST request to get Countries by criteria: {}", criteria);
+        List<CountryDTO> entityList = countryQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

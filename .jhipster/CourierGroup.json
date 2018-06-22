@@ -8,10 +8,9 @@
     ],
     "relationships": [
         {
-            "relationshipType": "many-to-many",
+            "relationshipType": "one-to-many",
             "relationshipName": "courier",
             "otherEntityName": "courier",
-            "ownerSide": false,
             "otherEntityRelationshipName": "courierGroup"
         }
     ],
@@ -20,7 +19,7 @@
     "dto": "mapstruct",
     "pagination": "no",
     "service": "serviceImpl",
-    "jpaMetamodelFiltering": false,
+    "jpaMetamodelFiltering": true,
     "fluentMethods": true,
     "clientRootFolder": "",
     "applications": "*"

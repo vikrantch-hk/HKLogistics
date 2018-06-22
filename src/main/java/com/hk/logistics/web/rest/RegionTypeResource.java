@@ -1,21 +1,16 @@
 package com.hk.logistics.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hk.logistics.security.AuthoritiesConstants;
 import com.hk.logistics.service.RegionTypeService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
-import com.poiji.bind.Poiji;
-import com.poiji.exception.PoijiExcelType;
 import com.hk.logistics.service.dto.RegionTypeDTO;
+import com.hk.logistics.service.dto.RegionTypeCriteria;
+import com.hk.logistics.service.RegionTypeQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,32 +18,9 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.stream.StreamSupport;
 
-
 import static org.elasticsearch.index.query.QueryBuilders.*;
-
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.ArrayList;
 
 /**
  * REST controller for managing RegionType.
@@ -62,11 +34,12 @@ public class RegionTypeResource {
     private static final String ENTITY_NAME = "regionType";
 
     private final RegionTypeService regionTypeService;
-    
-    private int batchSize = 100;
 
-    public RegionTypeResource(RegionTypeService regionTypeService) {
+    private final RegionTypeQueryService regionTypeQueryService;
+
+    public RegionTypeResource(RegionTypeService regionTypeService, RegionTypeQueryService regionTypeQueryService) {
         this.regionTypeService = regionTypeService;
+        this.regionTypeQueryService = regionTypeQueryService;
     }
 
     /**
@@ -114,13 +87,15 @@ public class RegionTypeResource {
     /**
      * GET  /region-types : get all the regionTypes.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of regionTypes in body
      */
     @GetMapping("/region-types")
     @Timed
-    public List<RegionTypeDTO> getAllRegionTypes() {
-        log.debug("REST request to get all RegionTypes");
-        return regionTypeService.findAll();
+    public ResponseEntity<List<RegionTypeDTO>> getAllRegionTypes(RegionTypeCriteria criteria) {
+        log.debug("REST request to get RegionTypes by criteria: {}", criteria);
+        List<RegionTypeDTO> entityList = regionTypeQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**
@@ -164,64 +139,5 @@ public class RegionTypeResource {
         log.debug("REST request to search RegionTypes for query {}", query);
         return regionTypeService.search(query);
     }
-    
-    @RequestMapping(value = "/region-types/upload", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('"+AuthoritiesConstants.MANAGER+"')")
-    public @ResponseBody ResponseEntity<RegionTypeDTO> handleFileUpload(
-			@RequestParam(value = "file", required = false) MultipartFile file) throws URISyntaxException {
-		RegionTypeDTO result = null;
-		try {
-			List<RegionTypeDTO> vendorList = Poiji.fromExcel(new ByteArrayInputStream(file.getBytes()),
-					PoijiExcelType.XLSX, RegionTypeDTO.class);
 
-			Future<List<RegionTypeDTO>> savedEntities;
-
-			if (vendorList.size() > 0) {
-
-				savedEntities = bulkSave(vendorList);
-				return ResponseEntity.created(new URI("/api/upload/"))
-						// .headers(HeaderUtil.createEntityCreationAlert("Vendor", null))
-						.body(result);
-
-			} else {
-				throw new BadRequestAlertException("A new vendor File cannot be empty", ENTITY_NAME, "idexists");
-			}
-		} catch (RuntimeException | IOException e) {
-			log.error("Error while uploading.", e);
-			throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
-		} catch (Exception e) {
-			log.error("Error while uploading.", e);
-			throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
-		}
-	}
-    @Async
-	public Future<List<RegionTypeDTO>> bulkSave(List<RegionTypeDTO> entities) {
-        int size = entities.size();
-        List<RegionTypeDTO> savedEntities = new ArrayList<>(size);
-        try {
-            for (int i = 0; i < size; i += batchSize) {
-                int toIndex = i + (((i + batchSize) < size) ? batchSize : size - i);
-                savedEntities.addAll(processBatch(entities.subList(i, toIndex)));
-                
-            }
-        } catch (Exception ignored) {
-            // or do something...  
-        }
-        
-        if(savedEntities.size()!=entities.size())
-		{
-			log.error("few entities are not saved");
-		}
-        else
-        {
-        	log.debug("entities are saved");
-        }
-        
-        return new AsyncResult<List<RegionTypeDTO>>(savedEntities);
-    }
-	
-    protected List<RegionTypeDTO> processBatch(List<RegionTypeDTO> batch) {
-        List<RegionTypeDTO> list = regionTypeService.upload(batch);
-        return list;
-    }
 }

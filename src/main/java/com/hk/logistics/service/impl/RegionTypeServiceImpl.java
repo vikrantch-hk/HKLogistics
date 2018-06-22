@@ -113,17 +113,4 @@ public class RegionTypeServiceImpl implements RegionTypeService {
             .map(regionTypeMapper::toDto)
             .collect(Collectors.toList());
     }
-
-	@Override
-	@Transactional
-	public List<RegionTypeDTO> upload(List<RegionTypeDTO> batch) {
-		log.debug("Request to upload RegionType : {}", batch);
-		List<RegionType> inList = batch.parallelStream().map(dto -> regionTypeMapper.toEntity(dto))
-				.collect(Collectors.toList());
-		List<RegionType> outList = regionTypeRepository.saveAll(inList);
-		List<RegionTypeDTO> result = outList.parallelStream().map(regionType -> regionTypeMapper.toDto(regionType))
-				.collect(Collectors.toList());
-		regionTypeSearchRepository.saveAll(inList);
-		return result;
-	}
 }

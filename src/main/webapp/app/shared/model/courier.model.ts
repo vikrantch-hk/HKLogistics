@@ -1,6 +1,3 @@
-import { ICourierChannel } from 'app/shared/model//courier-channel.model';
-import { ICourierGroup } from 'app/shared/model//courier-group.model';
-
 export interface ICourier {
     id?: number;
     name?: string;
@@ -11,8 +8,9 @@ export interface ICourier {
     hkShipping?: boolean;
     vendorShipping?: boolean;
     reversePickup?: boolean;
-    courierChannels?: ICourierChannel[];
-    courierGroups?: ICourierGroup[];
+    courierChannelId?: number;
+    courierGroupName?: string;
+    courierGroupId?: number;
 }
 
 export class Courier implements ICourier {
@@ -26,8 +24,9 @@ export class Courier implements ICourier {
         public hkShipping?: boolean,
         public vendorShipping?: boolean,
         public reversePickup?: boolean,
-        public courierChannels?: ICourierChannel[],
-        public courierGroups?: ICourierGroup[]
+        public courierChannelId?: number,
+        public courierGroupName?: string,
+        public courierGroupId?: number
     ) {
         this.active = false;
         this.hkShipping = false;

@@ -9,6 +9,8 @@ import com.hk.logistics.service.StateService;
 import com.hk.logistics.service.dto.StateDTO;
 import com.hk.logistics.service.mapper.StateMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.StateCriteria;
+import com.hk.logistics.service.StateQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +77,9 @@ public class StateResourceIntTest {
     private StateSearchRepository mockStateSearchRepository;
 
     @Autowired
+    private StateQueryService stateQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -93,7 +98,7 @@ public class StateResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final StateResource stateResource = new StateResource(stateService);
+        final StateResource stateResource = new StateResource(stateService, stateQueryService);
         this.restStateMockMvc = MockMvcBuilders.standaloneSetup(stateResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -237,6 +242,147 @@ public class StateResourceIntTest {
             .andExpect(jsonPath("$.identifier").value(DEFAULT_IDENTIFIER.toString()))
             .andExpect(jsonPath("$.unionTerritory").value(DEFAULT_UNION_TERRITORY.booleanValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllStatesByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where name equals to DEFAULT_NAME
+        defaultStateShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the stateList where name equals to UPDATED_NAME
+        defaultStateShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultStateShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the stateList where name equals to UPDATED_NAME
+        defaultStateShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where name is not null
+        defaultStateShouldBeFound("name.specified=true");
+
+        // Get all the stateList where name is null
+        defaultStateShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByIdentifierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where identifier equals to DEFAULT_IDENTIFIER
+        defaultStateShouldBeFound("identifier.equals=" + DEFAULT_IDENTIFIER);
+
+        // Get all the stateList where identifier equals to UPDATED_IDENTIFIER
+        defaultStateShouldNotBeFound("identifier.equals=" + UPDATED_IDENTIFIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByIdentifierIsInShouldWork() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where identifier in DEFAULT_IDENTIFIER or UPDATED_IDENTIFIER
+        defaultStateShouldBeFound("identifier.in=" + DEFAULT_IDENTIFIER + "," + UPDATED_IDENTIFIER);
+
+        // Get all the stateList where identifier equals to UPDATED_IDENTIFIER
+        defaultStateShouldNotBeFound("identifier.in=" + UPDATED_IDENTIFIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByIdentifierIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where identifier is not null
+        defaultStateShouldBeFound("identifier.specified=true");
+
+        // Get all the stateList where identifier is null
+        defaultStateShouldNotBeFound("identifier.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByUnionTerritoryIsEqualToSomething() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where unionTerritory equals to DEFAULT_UNION_TERRITORY
+        defaultStateShouldBeFound("unionTerritory.equals=" + DEFAULT_UNION_TERRITORY);
+
+        // Get all the stateList where unionTerritory equals to UPDATED_UNION_TERRITORY
+        defaultStateShouldNotBeFound("unionTerritory.equals=" + UPDATED_UNION_TERRITORY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByUnionTerritoryIsInShouldWork() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where unionTerritory in DEFAULT_UNION_TERRITORY or UPDATED_UNION_TERRITORY
+        defaultStateShouldBeFound("unionTerritory.in=" + DEFAULT_UNION_TERRITORY + "," + UPDATED_UNION_TERRITORY);
+
+        // Get all the stateList where unionTerritory equals to UPDATED_UNION_TERRITORY
+        defaultStateShouldNotBeFound("unionTerritory.in=" + UPDATED_UNION_TERRITORY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllStatesByUnionTerritoryIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        stateRepository.saveAndFlush(state);
+
+        // Get all the stateList where unionTerritory is not null
+        defaultStateShouldBeFound("unionTerritory.specified=true");
+
+        // Get all the stateList where unionTerritory is null
+        defaultStateShouldNotBeFound("unionTerritory.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultStateShouldBeFound(String filter) throws Exception {
+        restStateMockMvc.perform(get("/api/states?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(state.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].identifier").value(hasItem(DEFAULT_IDENTIFIER.toString())))
+            .andExpect(jsonPath("$.[*].unionTerritory").value(hasItem(DEFAULT_UNION_TERRITORY.booleanValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultStateShouldNotBeFound(String filter) throws Exception {
+        restStateMockMvc.perform(get("/api/states?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingState() throws Exception {

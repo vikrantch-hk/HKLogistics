@@ -3,12 +3,15 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Hub;
+import com.hk.logistics.domain.Pincode;
 import com.hk.logistics.repository.HubRepository;
 import com.hk.logistics.repository.search.HubSearchRepository;
 import com.hk.logistics.service.HubService;
 import com.hk.logistics.service.dto.HubDTO;
 import com.hk.logistics.service.mapper.HubMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.HubCriteria;
+import com.hk.logistics.service.HubQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +78,9 @@ public class HubResourceIntTest {
     private HubSearchRepository mockHubSearchRepository;
 
     @Autowired
+    private HubQueryService hubQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -93,7 +99,7 @@ public class HubResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final HubResource hubResource = new HubResource(hubService);
+        final HubResource hubResource = new HubResource(hubService, hubQueryService);
         this.restHubMockMvc = MockMvcBuilders.standaloneSetup(hubResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -218,6 +224,166 @@ public class HubResourceIntTest {
             .andExpect(jsonPath("$.address").value(DEFAULT_ADDRESS.toString()))
             .andExpect(jsonPath("$.country").value(DEFAULT_COUNTRY.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllHubsByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where name equals to DEFAULT_NAME
+        defaultHubShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the hubList where name equals to UPDATED_NAME
+        defaultHubShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultHubShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the hubList where name equals to UPDATED_NAME
+        defaultHubShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where name is not null
+        defaultHubShouldBeFound("name.specified=true");
+
+        // Get all the hubList where name is null
+        defaultHubShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByAddressIsEqualToSomething() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where address equals to DEFAULT_ADDRESS
+        defaultHubShouldBeFound("address.equals=" + DEFAULT_ADDRESS);
+
+        // Get all the hubList where address equals to UPDATED_ADDRESS
+        defaultHubShouldNotBeFound("address.equals=" + UPDATED_ADDRESS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByAddressIsInShouldWork() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where address in DEFAULT_ADDRESS or UPDATED_ADDRESS
+        defaultHubShouldBeFound("address.in=" + DEFAULT_ADDRESS + "," + UPDATED_ADDRESS);
+
+        // Get all the hubList where address equals to UPDATED_ADDRESS
+        defaultHubShouldNotBeFound("address.in=" + UPDATED_ADDRESS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByAddressIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where address is not null
+        defaultHubShouldBeFound("address.specified=true");
+
+        // Get all the hubList where address is null
+        defaultHubShouldNotBeFound("address.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByCountryIsEqualToSomething() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where country equals to DEFAULT_COUNTRY
+        defaultHubShouldBeFound("country.equals=" + DEFAULT_COUNTRY);
+
+        // Get all the hubList where country equals to UPDATED_COUNTRY
+        defaultHubShouldNotBeFound("country.equals=" + UPDATED_COUNTRY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByCountryIsInShouldWork() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where country in DEFAULT_COUNTRY or UPDATED_COUNTRY
+        defaultHubShouldBeFound("country.in=" + DEFAULT_COUNTRY + "," + UPDATED_COUNTRY);
+
+        // Get all the hubList where country equals to UPDATED_COUNTRY
+        defaultHubShouldNotBeFound("country.in=" + UPDATED_COUNTRY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByCountryIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        hubRepository.saveAndFlush(hub);
+
+        // Get all the hubList where country is not null
+        defaultHubShouldBeFound("country.specified=true");
+
+        // Get all the hubList where country is null
+        defaultHubShouldNotBeFound("country.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllHubsByPinCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Pincode pinCode = PincodeResourceIntTest.createEntity(em);
+        em.persist(pinCode);
+        em.flush();
+        hub.addPinCode(pinCode);
+        hubRepository.saveAndFlush(hub);
+        Long pinCodeId = pinCode.getId();
+
+        // Get all the hubList where pinCode equals to pinCodeId
+        defaultHubShouldBeFound("pinCodeId.equals=" + pinCodeId);
+
+        // Get all the hubList where pinCode equals to pinCodeId + 1
+        defaultHubShouldNotBeFound("pinCodeId.equals=" + (pinCodeId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultHubShouldBeFound(String filter) throws Exception {
+        restHubMockMvc.perform(get("/api/hubs?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(hub.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].address").value(hasItem(DEFAULT_ADDRESS.toString())))
+            .andExpect(jsonPath("$.[*].country").value(hasItem(DEFAULT_COUNTRY.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultHubShouldNotBeFound(String filter) throws Exception {
+        restHubMockMvc.perform(get("/api/hubs?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingHub() throws Exception {

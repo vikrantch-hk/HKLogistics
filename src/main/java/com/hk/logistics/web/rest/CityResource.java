@@ -5,6 +5,8 @@ import com.hk.logistics.service.CityService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.CityDTO;
+import com.hk.logistics.service.dto.CityCriteria;
+import com.hk.logistics.service.CityQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class CityResource {
 
     private final CityService cityService;
 
-    public CityResource(CityService cityService) {
+    private final CityQueryService cityQueryService;
+
+    public CityResource(CityService cityService, CityQueryService cityQueryService) {
         this.cityService = cityService;
+        this.cityQueryService = cityQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class CityResource {
     /**
      * GET  /cities : get all the cities.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of cities in body
      */
     @GetMapping("/cities")
     @Timed
-    public List<CityDTO> getAllCities() {
-        log.debug("REST request to get all Cities");
-        return cityService.findAll();
+    public ResponseEntity<List<CityDTO>> getAllCities(CityCriteria criteria) {
+        log.debug("REST request to get Cities by criteria: {}", criteria);
+        List<CityDTO> entityList = cityQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

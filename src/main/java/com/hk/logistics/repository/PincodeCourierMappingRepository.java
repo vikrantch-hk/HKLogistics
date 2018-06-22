@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PincodeCourierMappingRepository extends JpaRepository<PincodeCourierMapping, Long> {
+public interface PincodeCourierMappingRepository extends JpaRepository<PincodeCourierMapping, Long>, JpaSpecificationExecutor<PincodeCourierMapping> {
 
 }

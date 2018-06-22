@@ -30,8 +30,7 @@ public class CourierGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "courierGroups")
-    @JsonIgnore
+    @OneToMany(mappedBy = "courierGroup")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Courier> couriers = new HashSet<>();
 
@@ -68,13 +67,13 @@ public class CourierGroup implements Serializable {
 
     public CourierGroup addCourier(Courier courier) {
         this.couriers.add(courier);
-        courier.getCourierGroups().add(this);
+        courier.setCourierGroup(this);
         return this;
     }
 
     public CourierGroup removeCourier(Courier courier) {
         this.couriers.remove(courier);
-        courier.getCourierGroups().remove(this);
+        courier.setCourierGroup(null);
         return this;
     }
 

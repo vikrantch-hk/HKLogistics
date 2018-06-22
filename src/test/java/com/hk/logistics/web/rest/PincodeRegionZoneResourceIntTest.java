@@ -3,12 +3,17 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.PincodeRegionZone;
+import com.hk.logistics.domain.RegionType;
+import com.hk.logistics.domain.CourierGroup;
+import com.hk.logistics.domain.SourceDestinationMapping;
 import com.hk.logistics.repository.PincodeRegionZoneRepository;
 import com.hk.logistics.repository.search.PincodeRegionZoneSearchRepository;
 import com.hk.logistics.service.PincodeRegionZoneService;
 import com.hk.logistics.service.dto.PincodeRegionZoneDTO;
 import com.hk.logistics.service.mapper.PincodeRegionZoneMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.PincodeRegionZoneCriteria;
+import com.hk.logistics.service.PincodeRegionZoneQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +71,9 @@ public class PincodeRegionZoneResourceIntTest {
     private PincodeRegionZoneSearchRepository mockPincodeRegionZoneSearchRepository;
 
     @Autowired
+    private PincodeRegionZoneQueryService pincodeRegionZoneQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -84,7 +92,7 @@ public class PincodeRegionZoneResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PincodeRegionZoneResource pincodeRegionZoneResource = new PincodeRegionZoneResource(pincodeRegionZoneService);
+        final PincodeRegionZoneResource pincodeRegionZoneResource = new PincodeRegionZoneResource(pincodeRegionZoneService, pincodeRegionZoneQueryService);
         this.restPincodeRegionZoneMockMvc = MockMvcBuilders.standaloneSetup(pincodeRegionZoneResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -178,6 +186,84 @@ public class PincodeRegionZoneResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(pincodeRegionZone.getId().intValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllPincodeRegionZonesByRegionTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        RegionType regionType = RegionTypeResourceIntTest.createEntity(em);
+        em.persist(regionType);
+        em.flush();
+        pincodeRegionZone.setRegionType(regionType);
+        pincodeRegionZoneRepository.saveAndFlush(pincodeRegionZone);
+        Long regionTypeId = regionType.getId();
+
+        // Get all the pincodeRegionZoneList where regionType equals to regionTypeId
+        defaultPincodeRegionZoneShouldBeFound("regionTypeId.equals=" + regionTypeId);
+
+        // Get all the pincodeRegionZoneList where regionType equals to regionTypeId + 1
+        defaultPincodeRegionZoneShouldNotBeFound("regionTypeId.equals=" + (regionTypeId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodeRegionZonesByCourierGroupIsEqualToSomething() throws Exception {
+        // Initialize the database
+        CourierGroup courierGroup = CourierGroupResourceIntTest.createEntity(em);
+        em.persist(courierGroup);
+        em.flush();
+        pincodeRegionZone.setCourierGroup(courierGroup);
+        pincodeRegionZoneRepository.saveAndFlush(pincodeRegionZone);
+        Long courierGroupId = courierGroup.getId();
+
+        // Get all the pincodeRegionZoneList where courierGroup equals to courierGroupId
+        defaultPincodeRegionZoneShouldBeFound("courierGroupId.equals=" + courierGroupId);
+
+        // Get all the pincodeRegionZoneList where courierGroup equals to courierGroupId + 1
+        defaultPincodeRegionZoneShouldNotBeFound("courierGroupId.equals=" + (courierGroupId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodeRegionZonesBySourceDestinationMappingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        SourceDestinationMapping sourceDestinationMapping = SourceDestinationMappingResourceIntTest.createEntity(em);
+        em.persist(sourceDestinationMapping);
+        em.flush();
+        pincodeRegionZone.setSourceDestinationMapping(sourceDestinationMapping);
+        pincodeRegionZoneRepository.saveAndFlush(pincodeRegionZone);
+        Long sourceDestinationMappingId = sourceDestinationMapping.getId();
+
+        // Get all the pincodeRegionZoneList where sourceDestinationMapping equals to sourceDestinationMappingId
+        defaultPincodeRegionZoneShouldBeFound("sourceDestinationMappingId.equals=" + sourceDestinationMappingId);
+
+        // Get all the pincodeRegionZoneList where sourceDestinationMapping equals to sourceDestinationMappingId + 1
+        defaultPincodeRegionZoneShouldNotBeFound("sourceDestinationMappingId.equals=" + (sourceDestinationMappingId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultPincodeRegionZoneShouldBeFound(String filter) throws Exception {
+        restPincodeRegionZoneMockMvc.perform(get("/api/pincode-region-zones?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(pincodeRegionZone.getId().intValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultPincodeRegionZoneShouldNotBeFound(String filter) throws Exception {
+        restPincodeRegionZoneMockMvc.perform(get("/api/pincode-region-zones?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingPincodeRegionZone() throws Exception {

@@ -9,6 +9,8 @@ import com.hk.logistics.service.CountryService;
 import com.hk.logistics.service.dto.CountryDTO;
 import com.hk.logistics.service.mapper.CountryMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CountryCriteria;
+import com.hk.logistics.service.CountryQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +74,9 @@ public class CountryResourceIntTest {
     private CountrySearchRepository mockCountrySearchRepository;
 
     @Autowired
+    private CountryQueryService countryQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -90,7 +95,7 @@ public class CountryResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CountryResource countryResource = new CountryResource(countryService);
+        final CountryResource countryResource = new CountryResource(countryService, countryQueryService);
         this.restCountryMockMvc = MockMvcBuilders.standaloneSetup(countryResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -230,6 +235,107 @@ public class CountryResourceIntTest {
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
             .andExpect(jsonPath("$.countryCode").value(DEFAULT_COUNTRY_CODE.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where name equals to DEFAULT_NAME
+        defaultCountryShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the countryList where name equals to UPDATED_NAME
+        defaultCountryShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultCountryShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the countryList where name equals to UPDATED_NAME
+        defaultCountryShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where name is not null
+        defaultCountryShouldBeFound("name.specified=true");
+
+        // Get all the countryList where name is null
+        defaultCountryShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByCountryCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where countryCode equals to DEFAULT_COUNTRY_CODE
+        defaultCountryShouldBeFound("countryCode.equals=" + DEFAULT_COUNTRY_CODE);
+
+        // Get all the countryList where countryCode equals to UPDATED_COUNTRY_CODE
+        defaultCountryShouldNotBeFound("countryCode.equals=" + UPDATED_COUNTRY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByCountryCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where countryCode in DEFAULT_COUNTRY_CODE or UPDATED_COUNTRY_CODE
+        defaultCountryShouldBeFound("countryCode.in=" + DEFAULT_COUNTRY_CODE + "," + UPDATED_COUNTRY_CODE);
+
+        // Get all the countryList where countryCode equals to UPDATED_COUNTRY_CODE
+        defaultCountryShouldNotBeFound("countryCode.in=" + UPDATED_COUNTRY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCountriesByCountryCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        countryRepository.saveAndFlush(country);
+
+        // Get all the countryList where countryCode is not null
+        defaultCountryShouldBeFound("countryCode.specified=true");
+
+        // Get all the countryList where countryCode is null
+        defaultCountryShouldNotBeFound("countryCode.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCountryShouldBeFound(String filter) throws Exception {
+        restCountryMockMvc.perform(get("/api/countries?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(country.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].countryCode").value(hasItem(DEFAULT_COUNTRY_CODE.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCountryShouldNotBeFound(String filter) throws Exception {
+        restCountryMockMvc.perform(get("/api/countries?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCountry() throws Exception {

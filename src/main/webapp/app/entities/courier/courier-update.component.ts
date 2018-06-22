@@ -6,6 +6,8 @@ import { JhiAlertService } from 'ng-jhipster';
 
 import { ICourier } from 'app/shared/model/courier.model';
 import { CourierService } from './courier.service';
+import { ICourierChannel } from 'app/shared/model/courier-channel.model';
+import { CourierChannelService } from 'app/entities/courier-channel';
 import { ICourierGroup } from 'app/shared/model/courier-group.model';
 import { CourierGroupService } from 'app/entities/courier-group';
 
@@ -17,11 +19,14 @@ export class CourierUpdateComponent implements OnInit {
     private _courier: ICourier;
     isSaving: boolean;
 
+    courierchannels: ICourierChannel[];
+
     couriergroups: ICourierGroup[];
 
     constructor(
         private jhiAlertService: JhiAlertService,
         private courierService: CourierService,
+        private courierChannelService: CourierChannelService,
         private courierGroupService: CourierGroupService,
         private activatedRoute: ActivatedRoute
     ) {}
@@ -31,6 +36,12 @@ export class CourierUpdateComponent implements OnInit {
         this.activatedRoute.data.subscribe(({ courier }) => {
             this.courier = courier;
         });
+        this.courierChannelService.query().subscribe(
+            (res: HttpResponse<ICourierChannel[]>) => {
+                this.courierchannels = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
         this.courierGroupService.query().subscribe(
             (res: HttpResponse<ICourierGroup[]>) => {
                 this.couriergroups = res.body;
@@ -69,19 +80,12 @@ export class CourierUpdateComponent implements OnInit {
         this.jhiAlertService.error(errorMessage, null, null);
     }
 
-    trackCourierGroupById(index: number, item: ICourierGroup) {
+    trackCourierChannelById(index: number, item: ICourierChannel) {
         return item.id;
     }
 
-    getSelected(selectedVals: Array<any>, option: any) {
-        if (selectedVals) {
-            for (let i = 0; i < selectedVals.length; i++) {
-                if (option.id === selectedVals[i].id) {
-                    return selectedVals[i];
-                }
-            }
-        }
-        return option;
+    trackCourierGroupById(index: number, item: ICourierGroup) {
+        return item.id;
     }
     get courier() {
         return this._courier;

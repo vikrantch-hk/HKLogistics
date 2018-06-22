@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface RegionTypeRepository extends JpaRepository<RegionType, Long> {
+public interface RegionTypeRepository extends JpaRepository<RegionType, Long>, JpaSpecificationExecutor<RegionType> {
 
 }

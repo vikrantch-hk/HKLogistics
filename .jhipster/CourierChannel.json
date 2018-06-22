@@ -22,15 +22,15 @@
             "otherEntityRelationshipName": "courierChannel"
         },
         {
-            "relationshipType": "many-to-one",
-            "relationshipName": "channel",
-            "otherEntityName": "channel",
-            "otherEntityField": "name"
+            "relationshipType": "one-to-many",
+            "relationshipName": "courier",
+            "otherEntityName": "courier",
+            "otherEntityRelationshipName": "courierChannel"
         },
         {
             "relationshipType": "many-to-one",
-            "relationshipName": "courier",
-            "otherEntityName": "courier",
+            "relationshipName": "channel",
+            "otherEntityName": "channel",
             "otherEntityField": "name"
         }
     ],
@@ -39,7 +39,7 @@
     "dto": "mapstruct",
     "pagination": "no",
     "service": "serviceImpl",
-    "jpaMetamodelFiltering": false,
+    "jpaMetamodelFiltering": true,
     "fluentMethods": true,
     "clientRootFolder": "",
     "applications": "*"

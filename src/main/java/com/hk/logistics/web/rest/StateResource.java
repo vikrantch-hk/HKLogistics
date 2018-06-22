@@ -5,6 +5,8 @@ import com.hk.logistics.service.StateService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.StateDTO;
+import com.hk.logistics.service.dto.StateCriteria;
+import com.hk.logistics.service.StateQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class StateResource {
 
     private final StateService stateService;
 
-    public StateResource(StateService stateService) {
+    private final StateQueryService stateQueryService;
+
+    public StateResource(StateService stateService, StateQueryService stateQueryService) {
         this.stateService = stateService;
+        this.stateQueryService = stateQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class StateResource {
     /**
      * GET  /states : get all the states.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of states in body
      */
     @GetMapping("/states")
     @Timed
-    public List<StateDTO> getAllStates() {
-        log.debug("REST request to get all States");
-        return stateService.findAll();
+    public ResponseEntity<List<StateDTO>> getAllStates(StateCriteria criteria) {
+        log.debug("REST request to get States by criteria: {}", criteria);
+        List<StateDTO> entityList = stateQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

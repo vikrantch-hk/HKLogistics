@@ -20,10 +20,6 @@ public class CourierChannelDTO implements Serializable {
 
     private String channelName;
 
-    private Long courierId;
-
-    private String courierName;
-
     public Long getId() {
         return id;
     }
@@ -72,22 +68,6 @@ public class CourierChannelDTO implements Serializable {
         this.channelName = channelName;
     }
 
-    public Long getCourierId() {
-        return courierId;
-    }
-
-    public void setCourierId(Long courierId) {
-        this.courierId = courierId;
-    }
-
-    public String getCourierName() {
-        return courierName;
-    }
-
-    public void setCourierName(String courierName) {
-        this.courierName = courierName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -118,8 +98,6 @@ public class CourierChannelDTO implements Serializable {
             ", natureOfProduct='" + getNatureOfProduct() + "'" +
             ", channel=" + getChannelId() +
             ", channel='" + getChannelName() + "'" +
-            ", courier=" + getCourierId() +
-            ", courier='" + getCourierName() + "'" +
             "}";
     }
 }

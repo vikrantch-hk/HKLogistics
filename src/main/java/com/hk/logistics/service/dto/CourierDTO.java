@@ -2,8 +2,6 @@ package com.hk.logistics.service.dto;
 
 import javax.validation.constraints.*;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -31,7 +29,11 @@ public class CourierDTO implements Serializable {
 
     private Boolean reversePickup;
 
-    private Set<CourierGroupDTO> courierGroups = new HashSet<>();
+    private Long courierChannelId;
+
+    private Long courierGroupId;
+
+    private String courierGroupName;
 
     public Long getId() {
         return id;
@@ -105,12 +107,28 @@ public class CourierDTO implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public Set<CourierGroupDTO> getCourierGroups() {
-        return courierGroups;
+    public Long getCourierChannelId() {
+        return courierChannelId;
     }
 
-    public void setCourierGroups(Set<CourierGroupDTO> courierGroups) {
-        this.courierGroups = courierGroups;
+    public void setCourierChannelId(Long courierChannelId) {
+        this.courierChannelId = courierChannelId;
+    }
+
+    public Long getCourierGroupId() {
+        return courierGroupId;
+    }
+
+    public void setCourierGroupId(Long courierGroupId) {
+        this.courierGroupId = courierGroupId;
+    }
+
+    public String getCourierGroupName() {
+        return courierGroupName;
+    }
+
+    public void setCourierGroupName(String courierGroupName) {
+        this.courierGroupName = courierGroupName;
     }
 
     @Override
@@ -146,6 +164,9 @@ public class CourierDTO implements Serializable {
             ", hkShipping='" + isHkShipping() + "'" +
             ", vendorShipping='" + isVendorShipping() + "'" +
             ", reversePickup='" + isReversePickup() + "'" +
+            ", courierChannel=" + getCourierChannelId() +
+            ", courierGroup=" + getCourierGroupId() +
+            ", courierGroup='" + getCourierGroupName() + "'" +
             "}";
     }
 }

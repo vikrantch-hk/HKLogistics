@@ -23,12 +23,6 @@
                         <a [routerLink]="['/channel', courierChannel.channelId, 'view']">{{courierChannel.channelName}}</a>
                     </div>
                 </dd>
-                <dt><span>Courier</span></dt>
-                <dd>
-                    <div *ngIf="courierChannel.courierId">
-                        <a [routerLink]="['/courier', courierChannel.courierId, 'view']">{{courierChannel.courierName}}</a>
-                    </div>
-                </dd>
             </dl>
 
             <button type="submit"

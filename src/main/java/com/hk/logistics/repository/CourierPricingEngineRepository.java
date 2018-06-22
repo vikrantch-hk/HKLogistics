@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface CourierPricingEngineRepository extends JpaRepository<CourierPricingEngine, Long> {
+public interface CourierPricingEngineRepository extends JpaRepository<CourierPricingEngine, Long>, JpaSpecificationExecutor<CourierPricingEngine> {
 
 }

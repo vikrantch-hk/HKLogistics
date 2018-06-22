@@ -3,12 +3,15 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Channel;
+import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.repository.ChannelRepository;
 import com.hk.logistics.repository.search.ChannelSearchRepository;
 import com.hk.logistics.service.ChannelService;
 import com.hk.logistics.service.dto.ChannelDTO;
 import com.hk.logistics.service.mapper.ChannelMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.ChannelCriteria;
+import com.hk.logistics.service.ChannelQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +72,9 @@ public class ChannelResourceIntTest {
     private ChannelSearchRepository mockChannelSearchRepository;
 
     @Autowired
+    private ChannelQueryService channelQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -87,7 +93,7 @@ public class ChannelResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ChannelResource channelResource = new ChannelResource(channelService);
+        final ChannelResource channelResource = new ChannelResource(channelService, channelQueryService);
         this.restChannelMockMvc = MockMvcBuilders.standaloneSetup(channelResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -204,6 +210,86 @@ public class ChannelResourceIntTest {
             .andExpect(jsonPath("$.id").value(channel.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where name equals to DEFAULT_NAME
+        defaultChannelShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the channelList where name equals to UPDATED_NAME
+        defaultChannelShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultChannelShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the channelList where name equals to UPDATED_NAME
+        defaultChannelShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where name is not null
+        defaultChannelShouldBeFound("name.specified=true");
+
+        // Get all the channelList where name is null
+        defaultChannelShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByCourierChannelIsEqualToSomething() throws Exception {
+        // Initialize the database
+        CourierChannel courierChannel = CourierChannelResourceIntTest.createEntity(em);
+        em.persist(courierChannel);
+        em.flush();
+        channel.addCourierChannel(courierChannel);
+        channelRepository.saveAndFlush(channel);
+        Long courierChannelId = courierChannel.getId();
+
+        // Get all the channelList where courierChannel equals to courierChannelId
+        defaultChannelShouldBeFound("courierChannelId.equals=" + courierChannelId);
+
+        // Get all the channelList where courierChannel equals to courierChannelId + 1
+        defaultChannelShouldNotBeFound("courierChannelId.equals=" + (courierChannelId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultChannelShouldBeFound(String filter) throws Exception {
+        restChannelMockMvc.perform(get("/api/channels?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(channel.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultChannelShouldNotBeFound(String filter) throws Exception {
+        restChannelMockMvc.perform(get("/api/channels?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingChannel() throws Exception {
