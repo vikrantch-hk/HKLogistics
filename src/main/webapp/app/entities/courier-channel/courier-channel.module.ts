@@ -1,33 +1,48 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { HkLogisticsSharedModule } from 'app/shared';
+import { HkLogisticsSharedModule } from '../../shared';
 import {
+    CourierChannelService,
+    CourierChannelPopupService,
     CourierChannelComponent,
     CourierChannelDetailComponent,
-    CourierChannelUpdateComponent,
+    CourierChannelDialogComponent,
+    CourierChannelPopupComponent,
     CourierChannelDeletePopupComponent,
     CourierChannelDeleteDialogComponent,
     courierChannelRoute,
-    courierChannelPopupRoute
+    courierChannelPopupRoute,
 } from './';
 
-const ENTITY_STATES = [...courierChannelRoute, ...courierChannelPopupRoute];
+const ENTITY_STATES = [
+    ...courierChannelRoute,
+    ...courierChannelPopupRoute,
+];
 
 @NgModule({
-    imports: [HkLogisticsSharedModule, RouterModule.forChild(ENTITY_STATES)],
+    imports: [
+        HkLogisticsSharedModule,
+        RouterModule.forChild(ENTITY_STATES)
+    ],
     declarations: [
         CourierChannelComponent,
         CourierChannelDetailComponent,
-        CourierChannelUpdateComponent,
+        CourierChannelDialogComponent,
         CourierChannelDeleteDialogComponent,
-        CourierChannelDeletePopupComponent
+        CourierChannelPopupComponent,
+        CourierChannelDeletePopupComponent,
     ],
     entryComponents: [
         CourierChannelComponent,
-        CourierChannelUpdateComponent,
+        CourierChannelDialogComponent,
+        CourierChannelPopupComponent,
         CourierChannelDeleteDialogComponent,
-        CourierChannelDeletePopupComponent
+        CourierChannelDeletePopupComponent,
+    ],
+    providers: [
+        CourierChannelService,
+        CourierChannelPopupService,
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

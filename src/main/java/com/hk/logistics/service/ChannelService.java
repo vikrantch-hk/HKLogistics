@@ -1,9 +1,7 @@
 package com.hk.logistics.service;
 
 import com.hk.logistics.service.dto.ChannelDTO;
-
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service Interface for managing Channel.
@@ -25,14 +23,13 @@ public interface ChannelService {
      */
     List<ChannelDTO> findAll();
 
-
     /**
      * Get the "id" channel.
      *
      * @param id the id of the entity
      * @return the entity
      */
-    Optional<ChannelDTO> findOne(Long id);
+    ChannelDTO findOne(Long id);
 
     /**
      * Delete the "id" channel.

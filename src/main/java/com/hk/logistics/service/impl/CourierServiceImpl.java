@@ -8,14 +8,11 @@ import com.hk.logistics.service.dto.CourierDTO;
 import com.hk.logistics.service.mapper.CourierMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-import java.util.Optional;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -70,7 +67,6 @@ public class CourierServiceImpl implements CourierService {
             .map(courierMapper::toDto);
     }
 
-
     /**
      * Get one courier by id.
      *
@@ -79,10 +75,10 @@ public class CourierServiceImpl implements CourierService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<CourierDTO> findOne(Long id) {
+    public CourierDTO findOne(Long id) {
         log.debug("Request to get Courier : {}", id);
-        return courierRepository.findById(id)
-            .map(courierMapper::toDto);
+        Courier courier = courierRepository.findById(id).get();
+        return courierMapper.toDto(courier);
     }
 
     /**
@@ -93,8 +89,8 @@ public class CourierServiceImpl implements CourierService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Courier : {}", id);
-        courierRepository.deleteById(id);
-        courierSearchRepository.deleteById(id);
+        courierRepository.findById(id).get();
+        courierSearchRepository.findById(id).get();
     }
 
     /**
@@ -108,7 +104,7 @@ public class CourierServiceImpl implements CourierService {
     @Transactional(readOnly = true)
     public Page<CourierDTO> search(String query, Pageable pageable) {
         log.debug("Request to search for a page of Couriers for query {}", query);
-        return courierSearchRepository.search(queryStringQuery(query), pageable)
-            .map(courierMapper::toDto);
+        Page<Courier> result = courierSearchRepository.search(queryStringQuery(query), pageable);
+        return result.map(courierMapper::toDto);
     }
 }

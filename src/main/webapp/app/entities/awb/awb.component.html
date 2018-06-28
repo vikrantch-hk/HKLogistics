@@ -1,8 +1,8 @@
 <div>
-    <h2 id="page-heading">
+    <h2>
         <span>Awbs</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-awb" [routerLink]="['/awb/new']">
-            <fa-icon [icon]="'plus'"></fa-icon>
+        <button class="btn btn-primary float-right jh-create-entity create-awb" [routerLink]="['/', { outlets: { popup: ['awb-new'] } }]">
+            <span class="fa fa-plus"></span>
             <span class="hidden-sm-down" >
             Create new Awb
             </span>
@@ -15,10 +15,10 @@
                 <div class="input-group w-100 mt-3">
                     <input type="text" class="form-control" [(ngModel)]="currentSearch" id="currentSearch" name="currentSearch" placeholder="Query">
                     <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
-                        <fa-icon [icon]="'search'"></fa-icon>
+                        <span class="fa fa-search"></span>
                     </button>
                     <button class="input-group-append btn btn-danger" (click)="clear()" *ngIf="currentSearch">
-                        <fa-icon [icon]="'trash-alt'"></fa-icon>
+                        <span class="fa fa-trash-o"></span>
                     </button>
                 </div>
             </form>
@@ -37,7 +37,8 @@
             <th><span>Return Awb Number</span></th>
             <th><span>Return Awb Bar Code</span></th>
             <th><span>Is Bright Awb</span></th>
-            <th><span>Courier</span></th>
+            <th><span>Tracking Link</span></th>
+            <th><span>Channel</span></th>
             <th><span>Vendor WH Courier Mapping</span></th>
             <th><span>Awb Status</span></th>
             <th></th>
@@ -45,7 +46,7 @@
             </thead>
             <tbody>
             <tr *ngFor="let awb of awbs ;trackBy: trackId">
-                <td><a [routerLink]="['/awb', awb.id, 'view' ]">{{awb.id}}</a></td>
+                <td><a [routerLink]="['../awb', awb.id ]">{{awb.id}}</a></td>
                 <td>{{awb.awbNumber}}</td>
                 <td>{{awb.awbBarCode}}</td>
                 <td>{{awb.cod}}</td>
@@ -53,33 +54,36 @@
                 <td>{{awb.returnAwbNumber}}</td>
                 <td>{{awb.returnAwbBarCode}}</td>
                 <td>{{awb.isBrightAwb}}</td>
+                <td>{{awb.trackingLink}}</td>
                 <td>
-                    <div *ngIf="awb.courierId">
-                        <a [routerLink]="['../courier', awb.courierId , 'view' ]" >{{awb.courierName}}</a>
+                    <div *ngIf="awb.channelId">
+                        <a [routerLink]="['../channel', awb.channelId  ]" >{{awb.channelName}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="awb.vendorWHCourierMappingId">
-                        <a [routerLink]="['../vendor-wh-courier-mapping', awb.vendorWHCourierMappingId , 'view' ]" >{{awb.vendorWHCourierMappingId}}</a>
+                        <a [routerLink]="['../vendor-wh-courier-mapping', awb.vendorWHCourierMappingId  ]" >{{awb.vendorWHCourierMappingId}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="awb.awbStatusId">
-                        <a [routerLink]="['../awb-status', awb.awbStatusId , 'view' ]" >{{awb.awbStatusStatus}}</a>
+                        <a [routerLink]="['../awb-status', awb.awbStatusId  ]" >{{awb.awbStatusStatus}}</a>
                     </div>
                 </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
-                                [routerLink]="['/awb', awb.id, 'view' ]"
+                                [routerLink]="['../awb', awb.id ]"
                                 class="btn btn-info btn-sm">
-                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="fa fa-eye"></span>
                             <span class="d-none d-md-inline">View</span>
                         </button>
                         <button type="submit"
-                                [routerLink]="['/awb', awb.id, 'edit']"
+                                [routerLink]="['/', { outlets: { popup: 'awb/'+ awb.id + '/edit'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
                                 class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="fa fa-pencil"></span>
                             <span class="d-none d-md-inline">Edit</span>
                         </button>
                         <button type="submit"
@@ -87,7 +91,7 @@
                                 replaceUrl="true"
                                 queryParamsHandling="merge"
                                 class="btn btn-danger btn-sm">
-                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="fa fa-remove"></span>
                             <span class="d-none d-md-inline">Delete</span>
                         </button>
                     </div>

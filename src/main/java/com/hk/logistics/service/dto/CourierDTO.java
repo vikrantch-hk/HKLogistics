@@ -1,7 +1,10 @@
 package com.hk.logistics.service.dto;
 
+
 import javax.validation.constraints.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -13,6 +16,9 @@ public class CourierDTO implements Serializable {
 
     @NotNull
     private String name;
+
+    @NotNull
+    private String shortCode;
 
     @NotNull
     private Boolean active;
@@ -33,10 +39,6 @@ public class CourierDTO implements Serializable {
 
     private String courierGroupName;
 
-    private Long courierChannelId;
-
-    private String courierChannelName;
-    
     public Long getId() {
         return id;
     }
@@ -51,6 +53,14 @@ public class CourierDTO implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getShortCode() {
+        return shortCode;
+    }
+
+    public void setShortCode(String shortCode) {
+        this.shortCode = shortCode;
     }
 
     public Boolean isActive() {
@@ -125,23 +135,7 @@ public class CourierDTO implements Serializable {
         this.courierGroupName = courierGroupName;
     }
 
-    public Long getCourierChannelId() {
-        return courierChannelId;
-    }
-
-    public void setCourierChannelId(Long courierChannelId) {
-        this.courierChannelId = courierChannelId;
-    }
-
-    public String getCourierChannelName() {
-		return courierChannelName;
-	}
-
-	public void setCourierChannelName(String courierChannelName) {
-		this.courierChannelName = courierChannelName;
-	}
-
-	@Override
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -151,7 +145,7 @@ public class CourierDTO implements Serializable {
         }
 
         CourierDTO courierDTO = (CourierDTO) o;
-        if (courierDTO.getId() == null || getId() == null) {
+        if(courierDTO.getId() == null || getId() == null) {
             return false;
         }
         return Objects.equals(getId(), courierDTO.getId());
@@ -167,6 +161,7 @@ public class CourierDTO implements Serializable {
         return "CourierDTO{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", shortCode='" + getShortCode() + "'" +
             ", active='" + isActive() + "'" +
             ", trackingParameter='" + getTrackingParameter() + "'" +
             ", trackingUrl='" + getTrackingUrl() + "'" +
@@ -174,9 +169,6 @@ public class CourierDTO implements Serializable {
             ", hkShipping='" + isHkShipping() + "'" +
             ", vendorShipping='" + isVendorShipping() + "'" +
             ", reversePickup='" + isReversePickup() + "'" +
-            ", courierGroup=" + getCourierGroupId() +
-            ", courierGroup='" + getCourierGroupName() + "'" +
-            ", courierChannel=" + getCourierChannelId() +
             "}";
     }
 }

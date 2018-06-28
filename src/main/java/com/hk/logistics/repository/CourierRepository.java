@@ -21,16 +21,6 @@ import com.hk.logistics.domain.Courier;
 @Repository
 public interface CourierRepository extends JpaRepository<Courier, Long>,JpaSpecificationExecutor<Courier> {
 
-	@Query(value = "select distinct courier from Courier courier left join fetch courier.courierGroups",
-			countQuery = "select count(distinct courier) from Courier courier")
-	Page<Courier> findAllWithEagerRelationships(Pageable pageable);
-
-	@Query(value = "select distinct courier from Courier courier left join fetch courier.courierGroups")
-	List<Courier> findAllWithEagerRelationships();
-
-	@Query("select courier from Courier courier left join fetch courier.courierGroups where courier.id =:id")
-	Optional<Courier> findOneWithEagerRelationships(@Param("id") Long id);
-
 	Courier findByShortCode(String name);
 
 	List<Courier> findAllByActive(Boolean active);

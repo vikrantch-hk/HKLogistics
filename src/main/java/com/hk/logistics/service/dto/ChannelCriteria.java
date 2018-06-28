@@ -30,6 +30,8 @@ public class ChannelCriteria implements Serializable {
 
     private StringFilter name;
 
+    private StringFilter store;
+
     private LongFilter courierChannelId;
 
     public ChannelCriteria() {
@@ -51,6 +53,14 @@ public class ChannelCriteria implements Serializable {
         this.name = name;
     }
 
+    public StringFilter getStore() {
+        return store;
+    }
+
+    public void setStore(StringFilter store) {
+        this.store = store;
+    }
+
     public LongFilter getCourierChannelId() {
         return courierChannelId;
     }
@@ -64,6 +74,7 @@ public class ChannelCriteria implements Serializable {
         return "ChannelCriteria{" +
                 (id != null ? "id=" + id + ", " : "") +
                 (name != null ? "name=" + name + ", " : "") +
+                (store != null ? "store=" + store + ", " : "") +
                 (courierChannelId != null ? "courierChannelId=" + courierChannelId + ", " : "") +
             "}";
     }

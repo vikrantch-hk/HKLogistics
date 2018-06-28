@@ -1,40 +1,54 @@
 /* tslint:disable max-line-length */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
+import { HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
 
 import { HkLogisticsTestModule } from '../../../test.module';
-import { ChannelDetailComponent } from 'app/entities/channel/channel-detail.component';
-import { Channel } from 'app/shared/model/channel.model';
+import { ChannelDetailComponent } from '../../../../../../main/webapp/app/entities/channel/channel-detail.component';
+import { ChannelService } from '../../../../../../main/webapp/app/entities/channel/channel.service';
+import { Channel } from '../../../../../../main/webapp/app/entities/channel/channel.model';
 
 describe('Component Tests', () => {
+
     describe('Channel Management Detail Component', () => {
         let comp: ChannelDetailComponent;
         let fixture: ComponentFixture<ChannelDetailComponent>;
-        const route = ({ data: of({ channel: new Channel(123) }) } as any) as ActivatedRoute;
+        let service: ChannelService;
 
-        beforeEach(() => {
+        beforeEach(async(() => {
             TestBed.configureTestingModule({
                 imports: [HkLogisticsTestModule],
                 declarations: [ChannelDetailComponent],
-                providers: [{ provide: ActivatedRoute, useValue: route }]
+                providers: [
+                    ChannelService
+                ]
             })
-                .overrideTemplate(ChannelDetailComponent, '')
-                .compileComponents();
+            .overrideTemplate(ChannelDetailComponent, '')
+            .compileComponents();
+        }));
+
+        beforeEach(() => {
             fixture = TestBed.createComponent(ChannelDetailComponent);
             comp = fixture.componentInstance;
+            service = fixture.debugElement.injector.get(ChannelService);
         });
 
         describe('OnInit', () => {
             it('Should call load all on init', () => {
                 // GIVEN
 
+                spyOn(service, 'find').and.returnValue(Observable.of(new HttpResponse({
+                    body: new Channel(123)
+                })));
+
                 // WHEN
                 comp.ngOnInit();
 
                 // THEN
-                expect(comp.channel).toEqual(jasmine.objectContaining({ id: 123 }));
+                expect(service.find).toHaveBeenCalledWith(123);
+                expect(comp.channel).toEqual(jasmine.objectContaining({id: 123}));
             });
         });
     });
+
 });

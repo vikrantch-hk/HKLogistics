@@ -8,11 +8,11 @@
     -->
     <changeSet id="20180620165226-2" author="jhipster">
         
-        <addForeignKeyConstraint baseColumnNames="courier_id"
+        <addForeignKeyConstraint baseColumnNames="channel_id"
                                  baseTableName="awb"
-                                 constraintName="fk_awb_courier_id"
+                                 constraintName="fk_awb_channel_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="courier"/>
+                                 referencedTableName="channel"/>
 
         <addForeignKeyConstraint baseColumnNames="vendorwhcourier_mapping_id"
                                  baseTableName="awb"

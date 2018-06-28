@@ -1,19 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription } from 'rxjs/Subscription';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
 
-import { IChannel } from 'app/shared/model/channel.model';
-import { Principal } from 'app/core';
+import { Channel } from './channel.model';
 import { ChannelService } from './channel.service';
+import { Principal } from '../../shared';
 
 @Component({
     selector: 'jhi-channel',
     templateUrl: './channel.component.html'
 })
 export class ChannelComponent implements OnInit, OnDestroy {
-    channels: IChannel[];
+channels: Channel[];
     currentAccount: any;
     eventSubscriber: Subscription;
     currentSearch: string;
@@ -25,26 +25,22 @@ export class ChannelComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private principal: Principal
     ) {
-        this.currentSearch =
-            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
-                ? this.activatedRoute.snapshot.params['search']
-                : '';
+        this.currentSearch = this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ?
+            this.activatedRoute.snapshot.params['search'] : '';
     }
 
     loadAll() {
         if (this.currentSearch) {
-            this.channelService
-                .search({
-                    query: this.currentSearch
-                })
-                .subscribe(
-                    (res: HttpResponse<IChannel[]>) => (this.channels = res.body),
+            this.channelService.search({
+                query: this.currentSearch,
+                }).subscribe(
+                    (res: HttpResponse<Channel[]>) => this.channels = res.body,
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
             return;
-        }
+       }
         this.channelService.query().subscribe(
-            (res: HttpResponse<IChannel[]>) => {
+            (res: HttpResponse<Channel[]>) => {
                 this.channels = res.body;
                 this.currentSearch = '';
             },
@@ -64,10 +60,9 @@ export class ChannelComponent implements OnInit, OnDestroy {
         this.currentSearch = '';
         this.loadAll();
     }
-
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
+        this.principal.identity().then((account) => {
             this.currentAccount = account;
         });
         this.registerChangeInChannels();
@@ -77,15 +72,14 @@ export class ChannelComponent implements OnInit, OnDestroy {
         this.eventManager.destroy(this.eventSubscriber);
     }
 
-    trackId(index: number, item: IChannel) {
+    trackId(index: number, item: Channel) {
         return item.id;
     }
-
     registerChangeInChannels() {
-        this.eventSubscriber = this.eventManager.subscribe('channelListModification', response => this.loadAll());
+        this.eventSubscriber = this.eventManager.subscribe('channelListModification', (response) => this.loadAll());
     }
 
-    private onError(errorMessage: string) {
-        this.jhiAlertService.error(errorMessage, null, null);
+    private onError(error) {
+        this.jhiAlertService.error(error.message, null, null);
     }
 }

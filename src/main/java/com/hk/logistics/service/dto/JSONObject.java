@@ -20,10 +20,9 @@ import java.util.Set;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.minidev.json.JSONValue;
 
 
 @SuppressWarnings("unchecked")

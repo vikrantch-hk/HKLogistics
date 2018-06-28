@@ -77,7 +77,7 @@ public class AwbResource {
     public ResponseEntity<AwbDTO> updateAwb(@Valid @RequestBody AwbDTO awbDTO) throws URISyntaxException {
         log.debug("REST request to update Awb : {}", awbDTO);
         if (awbDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            return createAwb(awbDTO);
         }
         AwbDTO result = awbService.save(awbDTO);
         return ResponseEntity.ok()
@@ -109,8 +109,8 @@ public class AwbResource {
     @Timed
     public ResponseEntity<AwbDTO> getAwb(@PathVariable Long id) {
         log.debug("REST request to get Awb : {}", id);
-        Optional<AwbDTO> awbDTO = awbService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(awbDTO);
+        AwbDTO awbDTO = awbService.findOne(id).get();
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(awbDTO));
     }
 
     /**

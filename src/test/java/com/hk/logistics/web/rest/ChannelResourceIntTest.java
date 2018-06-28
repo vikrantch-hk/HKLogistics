@@ -5,8 +5,8 @@ import com.hk.logistics.HkLogisticsApp;
 import com.hk.logistics.domain.Channel;
 import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.repository.ChannelRepository;
-import com.hk.logistics.repository.search.ChannelSearchRepository;
 import com.hk.logistics.service.ChannelService;
+import com.hk.logistics.repository.search.ChannelSearchRepository;
 import com.hk.logistics.service.dto.ChannelDTO;
 import com.hk.logistics.service.mapper.ChannelMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
@@ -28,15 +28,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
-
 
 import static com.hk.logistics.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -52,24 +48,20 @@ public class ChannelResourceIntTest {
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
     private static final String UPDATED_NAME = "BBBBBBBBBB";
 
+    private static final String DEFAULT_STORE = "AAAAAAAAAA";
+    private static final String UPDATED_STORE = "BBBBBBBBBB";
+
     @Autowired
     private ChannelRepository channelRepository;
 
-
     @Autowired
     private ChannelMapper channelMapper;
-    
 
     @Autowired
     private ChannelService channelService;
 
-    /**
-     * This repository is mocked in the com.hk.logistics.repository.search test package.
-     *
-     * @see com.hk.logistics.repository.search.ChannelSearchRepositoryMockConfiguration
-     */
     @Autowired
-    private ChannelSearchRepository mockChannelSearchRepository;
+    private ChannelSearchRepository channelSearchRepository;
 
     @Autowired
     private ChannelQueryService channelQueryService;
@@ -109,12 +101,14 @@ public class ChannelResourceIntTest {
      */
     public static Channel createEntity(EntityManager em) {
         Channel channel = new Channel()
-            .name(DEFAULT_NAME);
+            .name(DEFAULT_NAME)
+            .store(DEFAULT_STORE);
         return channel;
     }
 
     @Before
     public void initTest() {
+        channelSearchRepository.deleteAll();
         channel = createEntity(em);
     }
 
@@ -135,9 +129,11 @@ public class ChannelResourceIntTest {
         assertThat(channelList).hasSize(databaseSizeBeforeCreate + 1);
         Channel testChannel = channelList.get(channelList.size() - 1);
         assertThat(testChannel.getName()).isEqualTo(DEFAULT_NAME);
+        assertThat(testChannel.getStore()).isEqualTo(DEFAULT_STORE);
 
         // Validate the Channel in Elasticsearch
-        verify(mockChannelSearchRepository, times(1)).save(testChannel);
+        Channel channelEs = channelSearchRepository.findById(testChannel.getId()).get();
+        assertThat(channelEs).isEqualToIgnoringGivenFields(testChannel);
     }
 
     @Test
@@ -158,9 +154,6 @@ public class ChannelResourceIntTest {
         // Validate the Channel in the database
         List<Channel> channelList = channelRepository.findAll();
         assertThat(channelList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Channel in Elasticsearch
-        verify(mockChannelSearchRepository, times(0)).save(channel);
     }
 
     @Test
@@ -169,6 +162,25 @@ public class ChannelResourceIntTest {
         int databaseSizeBeforeTest = channelRepository.findAll().size();
         // set the field null
         channel.setName(null);
+
+        // Create the Channel, which fails.
+        ChannelDTO channelDTO = channelMapper.toDto(channel);
+
+        restChannelMockMvc.perform(post("/api/channels")
+            .contentType(TestUtil.APPLICATION_JSON_UTF8)
+            .content(TestUtil.convertObjectToJsonBytes(channelDTO)))
+            .andExpect(status().isBadRequest());
+
+        List<Channel> channelList = channelRepository.findAll();
+        assertThat(channelList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void checkStoreIsRequired() throws Exception {
+        int databaseSizeBeforeTest = channelRepository.findAll().size();
+        // set the field null
+        channel.setStore(null);
 
         // Create the Channel, which fails.
         ChannelDTO channelDTO = channelMapper.toDto(channel);
@@ -193,9 +205,9 @@ public class ChannelResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(channel.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].store").value(hasItem(DEFAULT_STORE.toString())));
     }
-    
 
     @Test
     @Transactional
@@ -208,7 +220,8 @@ public class ChannelResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(channel.getId().intValue()))
-            .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()));
+            .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
+            .andExpect(jsonPath("$.store").value(DEFAULT_STORE.toString()));
     }
 
     @Test
@@ -252,6 +265,45 @@ public class ChannelResourceIntTest {
 
     @Test
     @Transactional
+    public void getAllChannelsByStoreIsEqualToSomething() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where store equals to DEFAULT_STORE
+        defaultChannelShouldBeFound("store.equals=" + DEFAULT_STORE);
+
+        // Get all the channelList where store equals to UPDATED_STORE
+        defaultChannelShouldNotBeFound("store.equals=" + UPDATED_STORE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByStoreIsInShouldWork() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where store in DEFAULT_STORE or UPDATED_STORE
+        defaultChannelShouldBeFound("store.in=" + DEFAULT_STORE + "," + UPDATED_STORE);
+
+        // Get all the channelList where store equals to UPDATED_STORE
+        defaultChannelShouldNotBeFound("store.in=" + UPDATED_STORE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllChannelsByStoreIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        channelRepository.saveAndFlush(channel);
+
+        // Get all the channelList where store is not null
+        defaultChannelShouldBeFound("store.specified=true");
+
+        // Get all the channelList where store is null
+        defaultChannelShouldNotBeFound("store.specified=false");
+    }
+
+    @Test
+    @Transactional
     public void getAllChannelsByCourierChannelIsEqualToSomething() throws Exception {
         // Initialize the database
         CourierChannel courierChannel = CourierChannelResourceIntTest.createEntity(em);
@@ -276,7 +328,8 @@ public class ChannelResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(channel.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].store").value(hasItem(DEFAULT_STORE.toString())));
     }
 
     /**
@@ -289,6 +342,7 @@ public class ChannelResourceIntTest {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
     }
+
 
     @Test
     @Transactional
@@ -303,7 +357,7 @@ public class ChannelResourceIntTest {
     public void updateChannel() throws Exception {
         // Initialize the database
         channelRepository.saveAndFlush(channel);
-
+        channelSearchRepository.save(channel);
         int databaseSizeBeforeUpdate = channelRepository.findAll().size();
 
         // Update the channel
@@ -311,7 +365,8 @@ public class ChannelResourceIntTest {
         // Disconnect from session so that the updates on updatedChannel are not directly saved in db
         em.detach(updatedChannel);
         updatedChannel
-            .name(UPDATED_NAME);
+            .name(UPDATED_NAME)
+            .store(UPDATED_STORE);
         ChannelDTO channelDTO = channelMapper.toDto(updatedChannel);
 
         restChannelMockMvc.perform(put("/api/channels")
@@ -324,9 +379,11 @@ public class ChannelResourceIntTest {
         assertThat(channelList).hasSize(databaseSizeBeforeUpdate);
         Channel testChannel = channelList.get(channelList.size() - 1);
         assertThat(testChannel.getName()).isEqualTo(UPDATED_NAME);
+        assertThat(testChannel.getStore()).isEqualTo(UPDATED_STORE);
 
         // Validate the Channel in Elasticsearch
-        verify(mockChannelSearchRepository, times(1)).save(testChannel);
+        Channel channelEs = channelSearchRepository.findById(testChannel.getId()).get();
+        assertThat(channelEs).isEqualToIgnoringGivenFields(testChannel);
     }
 
     @Test
@@ -341,14 +398,11 @@ public class ChannelResourceIntTest {
         restChannelMockMvc.perform(put("/api/channels")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(channelDTO)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isCreated());
 
         // Validate the Channel in the database
         List<Channel> channelList = channelRepository.findAll();
-        assertThat(channelList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Channel in Elasticsearch
-        verify(mockChannelSearchRepository, times(0)).save(channel);
+        assertThat(channelList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
@@ -356,7 +410,7 @@ public class ChannelResourceIntTest {
     public void deleteChannel() throws Exception {
         // Initialize the database
         channelRepository.saveAndFlush(channel);
-
+        channelSearchRepository.save(channel);
         int databaseSizeBeforeDelete = channelRepository.findAll().size();
 
         // Get the channel
@@ -364,12 +418,13 @@ public class ChannelResourceIntTest {
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
+        // Validate Elasticsearch is empty
+        boolean channelExistsInEs = channelSearchRepository.existsById(channel.getId());
+        assertThat(channelExistsInEs).isFalse();
+
         // Validate the database is empty
         List<Channel> channelList = channelRepository.findAll();
         assertThat(channelList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Channel in Elasticsearch
-        verify(mockChannelSearchRepository, times(1)).deleteById(channel.getId());
     }
 
     @Test
@@ -377,14 +432,15 @@ public class ChannelResourceIntTest {
     public void searchChannel() throws Exception {
         // Initialize the database
         channelRepository.saveAndFlush(channel);
-        when(mockChannelSearchRepository.search(queryStringQuery("id:" + channel.getId())))
-            .thenReturn(Collections.singletonList(channel));
+        channelSearchRepository.save(channel);
+
         // Search the channel
         restChannelMockMvc.perform(get("/api/_search/channels?query=id:" + channel.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(channel.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].store").value(hasItem(DEFAULT_STORE.toString())));
     }
 
     @Test

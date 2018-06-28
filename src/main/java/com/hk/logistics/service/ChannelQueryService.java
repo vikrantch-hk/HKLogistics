@@ -1,12 +1,13 @@
 package com.hk.logistics.service;
 
+
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ import com.hk.logistics.service.mapper.ChannelMapper;
 
 /**
  * Service for executing complex queries for Channel entities in the database.
- * The main input is a {@link ChannelCriteria} which gets converted to {@link Specification},
+ * The main input is a {@link ChannelCriteria} which get's converted to {@link Specifications},
  * in a way that all the filters must apply.
  * It returns a {@link List} of {@link ChannelDTO} or a {@link Page} of {@link ChannelDTO} which fulfills the criteria.
  */
@@ -32,6 +33,7 @@ import com.hk.logistics.service.mapper.ChannelMapper;
 public class ChannelQueryService extends QueryService<Channel> {
 
     private final Logger log = LoggerFactory.getLogger(ChannelQueryService.class);
+
 
     private final ChannelRepository channelRepository;
 
@@ -53,7 +55,7 @@ public class ChannelQueryService extends QueryService<Channel> {
     @Transactional(readOnly = true)
     public List<ChannelDTO> findByCriteria(ChannelCriteria criteria) {
         log.debug("find by criteria : {}", criteria);
-        final Specification<Channel> specification = createSpecification(criteria);
+        final Specifications<Channel> specification = createSpecification(criteria);
         return channelMapper.toDto(channelRepository.findAll(specification));
     }
 
@@ -66,22 +68,25 @@ public class ChannelQueryService extends QueryService<Channel> {
     @Transactional(readOnly = true)
     public Page<ChannelDTO> findByCriteria(ChannelCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
-        final Specification<Channel> specification = createSpecification(criteria);
-        return channelRepository.findAll(specification, page)
-            .map(channelMapper::toDto);
+        final Specifications<Channel> specification = createSpecification(criteria);
+        final Page<Channel> result = channelRepository.findAll(specification, page);
+        return result.map(channelMapper::toDto);
     }
 
     /**
-     * Function to convert ChannelCriteria to a {@link Specification}
+     * Function to convert ChannelCriteria to a {@link Specifications}
      */
-    private Specification<Channel> createSpecification(ChannelCriteria criteria) {
-        Specification<Channel> specification = Specification.where(null);
+    private Specifications<Channel> createSpecification(ChannelCriteria criteria) {
+        Specifications<Channel> specification = Specifications.where(null);
         if (criteria != null) {
             if (criteria.getId() != null) {
                 specification = specification.and(buildSpecification(criteria.getId(), Channel_.id));
             }
             if (criteria.getName() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getName(), Channel_.name));
+            }
+            if (criteria.getStore() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getStore(), Channel_.store));
             }
             if (criteria.getCourierChannelId() != null) {
                 specification = specification.and(buildReferringEntitySpecification(criteria.getCourierChannelId(), Channel_.courierChannels, CourierChannel_.id));

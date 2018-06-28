@@ -36,14 +36,13 @@ public interface AwbService {
      */
     List<AwbDTO> findAll();
 
-
     /**
      * Get the "id" awb.
      *
      * @param id the id of the entity
      * @return the entity
      */
-    Optional<AwbDTO> findOne(Long id);
+    public Optional<AwbDTO> findOne(Long id);
 
     /**
      * Delete the "id" awb.
@@ -56,33 +55,33 @@ public interface AwbService {
      * Search for the awb corresponding to the query.
      *
      * @param query the query of the search
-     *
+     * 
      * @return the list of entities
      */
     List<AwbDTO> search(String query);
-
+    
     Awb getAvailableAwbByVendorWHCourierMappingAndCodAndAwbStatus(VendorWHCourierMapping vendorWHCourierMapping,
-                                                                  Boolean cod, AwbStatus awbStatus);
+			Boolean cod, AwbStatus awbStatus);
 
-    Awb attachAwbForShipment(Courier suggestedCourier, CourierChannel courierChannel,
-                             VendorWHCourierMapping vendorWHCourierMapping, Boolean cod);
+	Awb attachAwbForShipment(Courier suggestedCourier, CourierChannel courierChannel,
+			VendorWHCourierMapping vendorWHCourierMapping, Boolean cod);
 
-    Awb attachAwb(AwbAttachAPIDto awbAttachAPIDto);
+	Awb attachAwb(AwbAttachAPIDto awbAttachAPIDto);
 
-    AwbCourierResponse getAwbCourierResponse(AwbCourierRequest awbCourierRequest);
+	AwbCourierResponse getAwbCourierResponse(AwbCourierRequest awbCourierRequest);
 
-    Awb changeCourier(CourierChangeAPIDto awbChaneAPIDto);
+	Awb changeCourier(CourierChangeAPIDto awbChaneAPIDto);
 
-    Awb changeAwbNumber(AwbChangeAPIDto awbChangeAPIDto);
+	Awb changeAwbNumber(AwbChangeAPIDto awbChangeAPIDto);
 
-    Awb attachAwbForBright(BrightChangeCourierRequest brightChangeCourierRequest, Courier courier);
+	Awb attachAwbForBright(BrightChangeCourierRequest brightChangeCourierRequest, Courier courier);
 
-    String markAwbUnused(String courierShortCode, String awbNumber, String store, String channel, String vendorCode,
-                         Long warehouse);
+	String markAwbUnused(String courierShortCode, String awbNumber, String store, String channel, String vendorCode,
+			Long warehouse);
 
-    Awb validateAwb(Courier courier, String awbNumber, String fulfillmentCentreCode, String store, String channelName,
-                    String isCod);
+	Awb validateAwb(Courier courier, String awbNumber, String fulfillmentCentreCode, String store, String channelName,
+			String isCod);
 
-    Awb markAwbUnused(Courier courier, String awbNumber, String fulfillmentCentreCode, String store, String channelName,
-                      String isCod);
+	Awb markAwbUnused(Courier courier, String awbNumber, String fulfillmentCentreCode, String store, String channelName,
+			String isCod);
 }

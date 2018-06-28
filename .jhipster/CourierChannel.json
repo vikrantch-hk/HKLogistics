@@ -28,7 +28,7 @@
             "otherEntityField": "name"
         },
         {
-            "relationshipType": "one-to-many",
+            "relationshipType": "many-to-one",
             "relationshipName": "courier",
             "otherEntityName": "courier",
             "otherEntityRelationshipName": "courierChannel"

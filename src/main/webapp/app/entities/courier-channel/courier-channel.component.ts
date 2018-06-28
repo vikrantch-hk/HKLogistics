@@ -1,19 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription } from 'rxjs/Subscription';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
 
-import { ICourierChannel } from 'app/shared/model/courier-channel.model';
-import { Principal } from 'app/core';
+import { CourierChannel } from './courier-channel.model';
 import { CourierChannelService } from './courier-channel.service';
+import { Principal } from '../../shared';
 
 @Component({
     selector: 'jhi-courier-channel',
     templateUrl: './courier-channel.component.html'
 })
 export class CourierChannelComponent implements OnInit, OnDestroy {
-    courierChannels: ICourierChannel[];
+courierChannels: CourierChannel[];
     currentAccount: any;
     eventSubscriber: Subscription;
     currentSearch: string;
@@ -25,26 +25,22 @@ export class CourierChannelComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private principal: Principal
     ) {
-        this.currentSearch =
-            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
-                ? this.activatedRoute.snapshot.params['search']
-                : '';
+        this.currentSearch = this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ?
+            this.activatedRoute.snapshot.params['search'] : '';
     }
 
     loadAll() {
         if (this.currentSearch) {
-            this.courierChannelService
-                .search({
-                    query: this.currentSearch
-                })
-                .subscribe(
-                    (res: HttpResponse<ICourierChannel[]>) => (this.courierChannels = res.body),
+            this.courierChannelService.search({
+                query: this.currentSearch,
+                }).subscribe(
+                    (res: HttpResponse<CourierChannel[]>) => this.courierChannels = res.body,
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
             return;
-        }
+       }
         this.courierChannelService.query().subscribe(
-            (res: HttpResponse<ICourierChannel[]>) => {
+            (res: HttpResponse<CourierChannel[]>) => {
                 this.courierChannels = res.body;
                 this.currentSearch = '';
             },
@@ -64,10 +60,9 @@ export class CourierChannelComponent implements OnInit, OnDestroy {
         this.currentSearch = '';
         this.loadAll();
     }
-
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
+        this.principal.identity().then((account) => {
             this.currentAccount = account;
         });
         this.registerChangeInCourierChannels();
@@ -77,15 +72,14 @@ export class CourierChannelComponent implements OnInit, OnDestroy {
         this.eventManager.destroy(this.eventSubscriber);
     }
 
-    trackId(index: number, item: ICourierChannel) {
+    trackId(index: number, item: CourierChannel) {
         return item.id;
     }
-
     registerChangeInCourierChannels() {
-        this.eventSubscriber = this.eventManager.subscribe('courierChannelListModification', response => this.loadAll());
+        this.eventSubscriber = this.eventManager.subscribe('courierChannelListModification', (response) => this.loadAll());
     }
 
-    private onError(errorMessage: string) {
-        this.jhiAlertService.error(errorMessage, null, null);
+    private onError(error) {
+        this.jhiAlertService.error(error.message, null, null);
     }
 }

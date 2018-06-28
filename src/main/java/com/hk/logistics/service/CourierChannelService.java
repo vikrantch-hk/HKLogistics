@@ -1,9 +1,7 @@
 package com.hk.logistics.service;
 
 import com.hk.logistics.service.dto.CourierChannelDTO;
-
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service Interface for managing CourierChannel.
@@ -25,14 +23,13 @@ public interface CourierChannelService {
      */
     List<CourierChannelDTO> findAll();
 
-
     /**
      * Get the "id" courierChannel.
      *
      * @param id the id of the entity
      * @return the entity
      */
-    Optional<CourierChannelDTO> findOne(Long id);
+    CourierChannelDTO findOne(Long id);
 
     /**
      * Delete the "id" courierChannel.

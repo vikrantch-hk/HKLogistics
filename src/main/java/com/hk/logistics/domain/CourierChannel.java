@@ -1,7 +1,6 @@
 package com.hk.logistics.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -38,6 +37,7 @@ public class CourierChannel implements Serializable {
     private String natureOfProduct;
 
     @OneToMany(mappedBy = "courierChannel")
+    @JsonIgnore
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<VendorWHCourierMapping> vendorWHCourierMappings = new HashSet<>();
 

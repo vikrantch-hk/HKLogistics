@@ -14,11 +14,5 @@
                                  referencedColumnNames="id"
                                  referencedTableName="courier_group"/>
 
-        <addForeignKeyConstraint baseColumnNames="courier_channel_id"
-                                 baseTableName="courier"
-                                 constraintName="fk_courier_courier_channel_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="courier_channel"/>
-
     </changeSet>
 </databaseChangeLog>

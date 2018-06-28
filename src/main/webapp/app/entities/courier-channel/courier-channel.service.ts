@@ -1,44 +1,81 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { SERVER_API_URL } from '../../app.constants';
 
-import { SERVER_API_URL } from 'app/app.constants';
-import { createRequestOption } from 'app/shared';
-import { ICourierChannel } from 'app/shared/model/courier-channel.model';
+import { CourierChannel } from './courier-channel.model';
+import { createRequestOption } from '../../shared';
 
-type EntityResponseType = HttpResponse<ICourierChannel>;
-type EntityArrayResponseType = HttpResponse<ICourierChannel[]>;
+export type EntityResponseType = HttpResponse<CourierChannel>;
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class CourierChannelService {
-    private resourceUrl = SERVER_API_URL + 'api/courier-channels';
+
+    private resourceUrl =  SERVER_API_URL + 'api/courier-channels';
     private resourceSearchUrl = SERVER_API_URL + 'api/_search/courier-channels';
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-    create(courierChannel: ICourierChannel): Observable<EntityResponseType> {
-        return this.http.post<ICourierChannel>(this.resourceUrl, courierChannel, { observe: 'response' });
+    create(courierChannel: CourierChannel): Observable<EntityResponseType> {
+        const copy = this.convert(courierChannel);
+        return this.http.post<CourierChannel>(this.resourceUrl, copy, { observe: 'response' })
+            .map((res: EntityResponseType) => this.convertResponse(res));
     }
 
-    update(courierChannel: ICourierChannel): Observable<EntityResponseType> {
-        return this.http.put<ICourierChannel>(this.resourceUrl, courierChannel, { observe: 'response' });
+    update(courierChannel: CourierChannel): Observable<EntityResponseType> {
+        const copy = this.convert(courierChannel);
+        return this.http.put<CourierChannel>(this.resourceUrl, copy, { observe: 'response' })
+            .map((res: EntityResponseType) => this.convertResponse(res));
     }
 
     find(id: number): Observable<EntityResponseType> {
-        return this.http.get<ICourierChannel>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+        return this.http.get<CourierChannel>(`${this.resourceUrl}/${id}`, { observe: 'response'})
+            .map((res: EntityResponseType) => this.convertResponse(res));
     }
 
-    query(req?: any): Observable<EntityArrayResponseType> {
+    query(req?: any): Observable<HttpResponse<CourierChannel[]>> {
         const options = createRequestOption(req);
-        return this.http.get<ICourierChannel[]>(this.resourceUrl, { params: options, observe: 'response' });
+        return this.http.get<CourierChannel[]>(this.resourceUrl, { params: options, observe: 'response' })
+            .map((res: HttpResponse<CourierChannel[]>) => this.convertArrayResponse(res));
     }
 
     delete(id: number): Observable<HttpResponse<any>> {
-        return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+        return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response'});
     }
 
-    search(req?: any): Observable<EntityArrayResponseType> {
+    search(req?: any): Observable<HttpResponse<CourierChannel[]>> {
         const options = createRequestOption(req);
-        return this.http.get<ICourierChannel[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
+        return this.http.get<CourierChannel[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .map((res: HttpResponse<CourierChannel[]>) => this.convertArrayResponse(res));
+    }
+
+    private convertResponse(res: EntityResponseType): EntityResponseType {
+        const body: CourierChannel = this.convertItemFromServer(res.body);
+        return res.clone({body});
+    }
+
+    private convertArrayResponse(res: HttpResponse<CourierChannel[]>): HttpResponse<CourierChannel[]> {
+        const jsonResponse: CourierChannel[] = res.body;
+        const body: CourierChannel[] = [];
+        for (let i = 0; i < jsonResponse.length; i++) {
+            body.push(this.convertItemFromServer(jsonResponse[i]));
+        }
+        return res.clone({body});
+    }
+
+    /**
+     * Convert a returned JSON object to CourierChannel.
+     */
+    private convertItemFromServer(courierChannel: CourierChannel): CourierChannel {
+        const copy: CourierChannel = Object.assign({}, courierChannel);
+        return copy;
+    }
+
+    /**
+     * Convert a CourierChannel to a JSON which can be sent to the server.
+     */
+    private convert(courierChannel: CourierChannel): CourierChannel {
+        const copy: CourierChannel = Object.assign({}, courierChannel);
+        return copy;
     }
 }

@@ -98,7 +98,6 @@ public class AwbServiceImpl implements AwbService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
-
     /**
      * Get one awb by id.
      *
@@ -141,7 +140,7 @@ public class AwbServiceImpl implements AwbService {
             .collect(Collectors.toList());
     }
     
-	@Autowired
+    @Autowired
 	VendorWHCourierMappingRepository vendorWHCourierMappingRepository;
 	@Autowired
 	AwbService awbService;

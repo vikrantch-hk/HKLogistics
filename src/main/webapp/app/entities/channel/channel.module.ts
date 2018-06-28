@@ -1,29 +1,49 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { HkLogisticsSharedModule } from 'app/shared';
+import { HkLogisticsSharedModule } from '../../shared';
 import {
+    ChannelService,
+    ChannelPopupService,
     ChannelComponent,
     ChannelDetailComponent,
-    ChannelUpdateComponent,
+    ChannelDialogComponent,
+    ChannelPopupComponent,
     ChannelDeletePopupComponent,
     ChannelDeleteDialogComponent,
     channelRoute,
-    channelPopupRoute
+    channelPopupRoute,
 } from './';
 
-const ENTITY_STATES = [...channelRoute, ...channelPopupRoute];
+const ENTITY_STATES = [
+    ...channelRoute,
+    ...channelPopupRoute,
+];
 
 @NgModule({
-    imports: [HkLogisticsSharedModule, RouterModule.forChild(ENTITY_STATES)],
+    imports: [
+        HkLogisticsSharedModule,
+        RouterModule.forChild(ENTITY_STATES)
+    ],
     declarations: [
         ChannelComponent,
         ChannelDetailComponent,
-        ChannelUpdateComponent,
+        ChannelDialogComponent,
         ChannelDeleteDialogComponent,
-        ChannelDeletePopupComponent
+        ChannelPopupComponent,
+        ChannelDeletePopupComponent,
     ],
-    entryComponents: [ChannelComponent, ChannelUpdateComponent, ChannelDeleteDialogComponent, ChannelDeletePopupComponent],
+    entryComponents: [
+        ChannelComponent,
+        ChannelDialogComponent,
+        ChannelPopupComponent,
+        ChannelDeleteDialogComponent,
+        ChannelDeletePopupComponent,
+    ],
+    providers: [
+        ChannelService,
+        ChannelPopupService,
+    ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HkLogisticsChannelModule {}

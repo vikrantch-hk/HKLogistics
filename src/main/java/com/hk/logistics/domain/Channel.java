@@ -32,7 +32,12 @@ public class Channel implements Serializable {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @NotNull
+    @Column(name = "jhi_store", nullable = false)
+    private String store;
+
     @OneToMany(mappedBy = "channel")
+    @JsonIgnore
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<CourierChannel> courierChannels = new HashSet<>();
 
@@ -56,6 +61,19 @@ public class Channel implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getStore() {
+        return store;
+    }
+
+    public Channel store(String store) {
+        this.store = store;
+        return this;
+    }
+
+    public void setStore(String store) {
+        this.store = store;
     }
 
     public Set<CourierChannel> getCourierChannels() {
@@ -109,6 +127,7 @@ public class Channel implements Serializable {
         return "Channel{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", store='" + getStore() + "'" +
             "}";
     }
 }

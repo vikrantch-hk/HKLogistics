@@ -1,7 +1,10 @@
 package com.hk.logistics.service.dto;
 
+
 import javax.validation.constraints.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -13,6 +16,9 @@ public class ChannelDTO implements Serializable {
 
     @NotNull
     private String name;
+
+    @NotNull
+    private String store;
 
     public Long getId() {
         return id;
@@ -30,6 +36,14 @@ public class ChannelDTO implements Serializable {
         this.name = name;
     }
 
+    public String getStore() {
+        return store;
+    }
+
+    public void setStore(String store) {
+        this.store = store;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -40,7 +54,7 @@ public class ChannelDTO implements Serializable {
         }
 
         ChannelDTO channelDTO = (ChannelDTO) o;
-        if (channelDTO.getId() == null || getId() == null) {
+        if(channelDTO.getId() == null || getId() == null) {
             return false;
         }
         return Objects.equals(getId(), channelDTO.getId());
@@ -56,6 +70,7 @@ public class ChannelDTO implements Serializable {
         return "ChannelDTO{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", store='" + getStore() + "'" +
             "}";
     }
 }

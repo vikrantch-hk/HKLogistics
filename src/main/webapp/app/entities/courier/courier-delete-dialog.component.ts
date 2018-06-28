@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
-import { NgbActiveModal, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { JhiEventManager } from 'ng-jhipster';
 
-import { ICourier } from 'app/shared/model/courier.model';
+import { Courier } from './courier.model';
+import { CourierPopupService } from './courier-popup.service';
 import { CourierService } from './courier.service';
 
 @Component({
@@ -12,16 +13,22 @@ import { CourierService } from './courier.service';
     templateUrl: './courier-delete-dialog.component.html'
 })
 export class CourierDeleteDialogComponent {
-    courier: ICourier;
 
-    constructor(private courierService: CourierService, public activeModal: NgbActiveModal, private eventManager: JhiEventManager) {}
+    courier: Courier;
+
+    constructor(
+        private courierService: CourierService,
+        public activeModal: NgbActiveModal,
+        private eventManager: JhiEventManager
+    ) {
+    }
 
     clear() {
         this.activeModal.dismiss('cancel');
     }
 
     confirmDelete(id: number) {
-        this.courierService.delete(id).subscribe(response => {
+        this.courierService.delete(id).subscribe((response) => {
             this.eventManager.broadcast({
                 name: 'courierListModification',
                 content: 'Deleted an courier'
@@ -36,30 +43,22 @@ export class CourierDeleteDialogComponent {
     template: ''
 })
 export class CourierDeletePopupComponent implements OnInit, OnDestroy {
-    private ngbModalRef: NgbModalRef;
 
-    constructor(private activatedRoute: ActivatedRoute, private router: Router, private modalService: NgbModal) {}
+    routeSub: any;
+
+    constructor(
+        private route: ActivatedRoute,
+        private courierPopupService: CourierPopupService
+    ) {}
 
     ngOnInit() {
-        this.activatedRoute.data.subscribe(({ courier }) => {
-            setTimeout(() => {
-                this.ngbModalRef = this.modalService.open(CourierDeleteDialogComponent as Component, { size: 'lg', backdrop: 'static' });
-                this.ngbModalRef.componentInstance.courier = courier;
-                this.ngbModalRef.result.then(
-                    result => {
-                        this.router.navigate([{ outlets: { popup: null } }], { replaceUrl: true, queryParamsHandling: 'merge' });
-                        this.ngbModalRef = null;
-                    },
-                    reason => {
-                        this.router.navigate([{ outlets: { popup: null } }], { replaceUrl: true, queryParamsHandling: 'merge' });
-                        this.ngbModalRef = null;
-                    }
-                );
-            }, 0);
+        this.routeSub = this.route.params.subscribe((params) => {
+            this.courierPopupService
+                .open(CourierDeleteDialogComponent as Component, params['id']);
         });
     }
 
     ngOnDestroy() {
-        this.ngbModalRef = null;
+        this.routeSub.unsubscribe();
     }
 }

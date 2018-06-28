@@ -1,8 +1,8 @@
 <div>
-    <h2 id="page-heading">
+    <h2>
         <span>Couriers</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-courier" [routerLink]="['/courier/new']">
-            <fa-icon [icon]="'plus'"></fa-icon>
+        <button class="btn btn-primary float-right jh-create-entity create-courier" [routerLink]="['/', { outlets: { popup: ['courier-new'] } }]">
+            <span class="fa fa-plus"></span>
             <span class="hidden-sm-down" >
             Create new Courier
             </span>
@@ -15,66 +15,39 @@
                 <div class="input-group w-100 mt-3">
                     <input type="text" class="form-control" [(ngModel)]="currentSearch" id="currentSearch" name="currentSearch" placeholder="Query">
                     <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
-                        <fa-icon [icon]="'search'"></fa-icon>
+                        <span class="fa fa-search"></span>
                     </button>
                     <button class="input-group-append btn btn-danger" (click)="clear()" *ngIf="currentSearch">
-                        <fa-icon [icon]="'trash-alt'"></fa-icon>
+                        <span class="fa fa-trash-o"></span>
                     </button>
                 </div>
             </form>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">Courier Operations
-            <select [(ngModel)]="filterOptions[0]">
-                <option value=""></option>
-                <option value="operations:hkShipping:true">hkShipping</option>
-                <option value="operations:reversePickup:true">reversePickup</option>
-            </select>
-        </div>
-        <div class="col-sm-12">Status
-            <select [(ngModel)]="filterOptions[1]">
-                <option value=""></option>
-                <option value="active:true">Active</option>
-                <option value="active:false">Inactive</option>
-            </select>
-        </div>
-        <div class="col-sm-12">Courier Group
-                <select [(ngModel)]="filterOptions[2]">
-                    <option [ngValue]="null"></option>
-                    <option [ngValue]="courierGroupOption.id" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById" ng-selected="filterOptions[2]">{{courierGroupOption.name}}</option>
-                </select>
-        </div>
-        <button class="input-group-append btn btn-info" (click)="filter(filterOptions)">
-            <fa-icon [icon]="'search'"></fa-icon>
-        </button>
-        <button class="input-group-append btn btn-danger" (click)="clearFilter()" *ngIf="filterOptions">
-            <fa-icon [icon]="'trash-alt'"></fa-icon>
-        </button>
     </div>
     <br/>
     <div class="table-responsive" *ngIf="couriers">
         <table class="table table-striped">
             <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-            <th jhiSortBy="id"><span>ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="name"><span>Name</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="active"><span>Active</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="trackingParameter"><span>Tracking Parameter</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="trackingUrl"><span>Tracking Url</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="parentCourierId"><span>Parent Courier Id</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="hkShipping"><span>Hk Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="vendorShipping"><span>Vendor Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="reversePickup"><span>Reverse Pickup</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="courierGroupName"><span>Courier Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="courierChannelId"><span>Courier Channel</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="id"><span>ID</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="name"><span>Name</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="shortCode"><span>Short Code</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="active"><span>Active</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="trackingParameter"><span>Tracking Parameter</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="trackingUrl"><span>Tracking Url</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="parentCourierId"><span>Parent Courier Id</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="hkShipping"><span>Hk Shipping</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="vendorShipping"><span>Vendor Shipping</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="reversePickup"><span>Reverse Pickup</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="courierGroupName"><span>Courier Group</span> <span class="fa fa-sort"></span></th>
             <th></th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let courier of couriers ;trackBy: trackId">
-                <td><a [routerLink]="['/courier', courier.id, 'view' ]">{{courier.id}}</a></td>
+                <td><a [routerLink]="['../courier', courier.id ]">{{courier.id}}</a></td>
                 <td>{{courier.name}}</td>
+                <td>{{courier.shortCode}}</td>
                 <td>{{courier.active}}</td>
                 <td>{{courier.trackingParameter}}</td>
                 <td>{{courier.trackingUrl}}</td>
@@ -84,26 +57,23 @@
                 <td>{{courier.reversePickup}}</td>
                 <td>
                     <div *ngIf="courier.courierGroupId">
-                        <a [routerLink]="['../courier-group', courier.courierGroupId , 'view' ]" >{{courier.courierGroupName}}</a>
-                    </div>
-                </td>
-                <td>
-                    <div *ngIf="courier.courierChannelId">
-                        <a [routerLink]="['../courier-channel', courier.courierChannelId , 'view' ]" >{{courier.courierChannelName}}</a>
+                        <a [routerLink]="['../courier-group', courier.courierGroupId  ]" >{{courier.courierGroupName}}</a>
                     </div>
                 </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
-                                [routerLink]="['/courier', courier.id, 'view' ]"
+                                [routerLink]="['../courier', courier.id ]"
                                 class="btn btn-info btn-sm">
-                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="fa fa-eye"></span>
                             <span class="d-none d-md-inline">View</span>
                         </button>
                         <button type="submit"
-                                [routerLink]="['/courier', courier.id, 'edit']"
+                                [routerLink]="['/', { outlets: { popup: 'courier/'+ courier.id + '/edit'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
                                 class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="fa fa-pencil"></span>
                             <span class="d-none d-md-inline">Edit</span>
                         </button>
                         <button type="submit"
@@ -111,7 +81,7 @@
                                 replaceUrl="true"
                                 queryParamsHandling="merge"
                                 class="btn btn-danger btn-sm">
-                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="fa fa-remove"></span>
                             <span class="d-none d-md-inline">Delete</span>
                         </button>
                     </div>

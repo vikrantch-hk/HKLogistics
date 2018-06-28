@@ -3,12 +3,12 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Awb;
-import com.hk.logistics.domain.Courier;
+import com.hk.logistics.domain.Channel;
 import com.hk.logistics.domain.VendorWHCourierMapping;
 import com.hk.logistics.domain.AwbStatus;
 import com.hk.logistics.repository.AwbRepository;
-import com.hk.logistics.repository.search.AwbSearchRepository;
 import com.hk.logistics.service.AwbService;
+import com.hk.logistics.repository.search.AwbSearchRepository;
 import com.hk.logistics.service.dto.AwbDTO;
 import com.hk.logistics.service.mapper.AwbMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
@@ -32,15 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.List;
-
 
 import static com.hk.logistics.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -74,24 +70,20 @@ public class AwbResourceIntTest {
     private static final Boolean DEFAULT_IS_BRIGHT_AWB = false;
     private static final Boolean UPDATED_IS_BRIGHT_AWB = true;
 
+    private static final String DEFAULT_TRACKING_LINK = "AAAAAAAAAA";
+    private static final String UPDATED_TRACKING_LINK = "BBBBBBBBBB";
+
     @Autowired
     private AwbRepository awbRepository;
 
-
     @Autowired
     private AwbMapper awbMapper;
-    
 
     @Autowired
     private AwbService awbService;
 
-    /**
-     * This repository is mocked in the com.hk.logistics.repository.search test package.
-     *
-     * @see com.hk.logistics.repository.search.AwbSearchRepositoryMockConfiguration
-     */
     @Autowired
-    private AwbSearchRepository mockAwbSearchRepository;
+    private AwbSearchRepository awbSearchRepository;
 
     @Autowired
     private AwbQueryService awbQueryService;
@@ -137,12 +129,14 @@ public class AwbResourceIntTest {
             .createDate(DEFAULT_CREATE_DATE)
             .returnAwbNumber(DEFAULT_RETURN_AWB_NUMBER)
             .returnAwbBarCode(DEFAULT_RETURN_AWB_BAR_CODE)
-            .isBrightAwb(DEFAULT_IS_BRIGHT_AWB);
+            .isBrightAwb(DEFAULT_IS_BRIGHT_AWB)
+            .trackingLink(DEFAULT_TRACKING_LINK);
         return awb;
     }
 
     @Before
     public void initTest() {
+        awbSearchRepository.deleteAll();
         awb = createEntity(em);
     }
 
@@ -169,9 +163,11 @@ public class AwbResourceIntTest {
         assertThat(testAwb.getReturnAwbNumber()).isEqualTo(DEFAULT_RETURN_AWB_NUMBER);
         assertThat(testAwb.getReturnAwbBarCode()).isEqualTo(DEFAULT_RETURN_AWB_BAR_CODE);
         assertThat(testAwb.isIsBrightAwb()).isEqualTo(DEFAULT_IS_BRIGHT_AWB);
+        assertThat(testAwb.getTrackingLink()).isEqualTo(DEFAULT_TRACKING_LINK);
 
         // Validate the Awb in Elasticsearch
-        verify(mockAwbSearchRepository, times(1)).save(testAwb);
+        Awb awbEs = awbSearchRepository.findById(testAwb.getId()).get();
+        assertThat(awbEs).isEqualToIgnoringGivenFields(testAwb);
     }
 
     @Test
@@ -192,9 +188,6 @@ public class AwbResourceIntTest {
         // Validate the Awb in the database
         List<Awb> awbList = awbRepository.findAll();
         assertThat(awbList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Awb in Elasticsearch
-        verify(mockAwbSearchRepository, times(0)).save(awb);
     }
 
     @Test
@@ -294,6 +287,25 @@ public class AwbResourceIntTest {
 
     @Test
     @Transactional
+    public void checkTrackingLinkIsRequired() throws Exception {
+        int databaseSizeBeforeTest = awbRepository.findAll().size();
+        // set the field null
+        awb.setTrackingLink(null);
+
+        // Create the Awb, which fails.
+        AwbDTO awbDTO = awbMapper.toDto(awb);
+
+        restAwbMockMvc.perform(post("/api/awbs")
+            .contentType(TestUtil.APPLICATION_JSON_UTF8)
+            .content(TestUtil.convertObjectToJsonBytes(awbDTO)))
+            .andExpect(status().isBadRequest());
+
+        List<Awb> awbList = awbRepository.findAll();
+        assertThat(awbList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     public void getAllAwbs() throws Exception {
         // Initialize the database
         awbRepository.saveAndFlush(awb);
@@ -309,9 +321,9 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$.[*].createDate").value(hasItem(DEFAULT_CREATE_DATE.toString())))
             .andExpect(jsonPath("$.[*].returnAwbNumber").value(hasItem(DEFAULT_RETURN_AWB_NUMBER.toString())))
             .andExpect(jsonPath("$.[*].returnAwbBarCode").value(hasItem(DEFAULT_RETURN_AWB_BAR_CODE.toString())))
-            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())));
+            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())))
+            .andExpect(jsonPath("$.[*].trackingLink").value(hasItem(DEFAULT_TRACKING_LINK.toString())));
     }
-    
 
     @Test
     @Transactional
@@ -330,7 +342,8 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$.createDate").value(DEFAULT_CREATE_DATE.toString()))
             .andExpect(jsonPath("$.returnAwbNumber").value(DEFAULT_RETURN_AWB_NUMBER.toString()))
             .andExpect(jsonPath("$.returnAwbBarCode").value(DEFAULT_RETURN_AWB_BAR_CODE.toString()))
-            .andExpect(jsonPath("$.isBrightAwb").value(DEFAULT_IS_BRIGHT_AWB.booleanValue()));
+            .andExpect(jsonPath("$.isBrightAwb").value(DEFAULT_IS_BRIGHT_AWB.booleanValue()))
+            .andExpect(jsonPath("$.trackingLink").value(DEFAULT_TRACKING_LINK.toString()));
     }
 
     @Test
@@ -635,20 +648,59 @@ public class AwbResourceIntTest {
 
     @Test
     @Transactional
-    public void getAllAwbsByCourierIsEqualToSomething() throws Exception {
+    public void getAllAwbsByTrackingLinkIsEqualToSomething() throws Exception {
         // Initialize the database
-        Courier courier = CourierResourceIntTest.createEntity(em);
-        em.persist(courier);
-        em.flush();
-        awb.setCourier(courier);
         awbRepository.saveAndFlush(awb);
-        Long courierId = courier.getId();
 
-        // Get all the awbList where courier equals to courierId
-        defaultAwbShouldBeFound("courierId.equals=" + courierId);
+        // Get all the awbList where trackingLink equals to DEFAULT_TRACKING_LINK
+        defaultAwbShouldBeFound("trackingLink.equals=" + DEFAULT_TRACKING_LINK);
 
-        // Get all the awbList where courier equals to courierId + 1
-        defaultAwbShouldNotBeFound("courierId.equals=" + (courierId + 1));
+        // Get all the awbList where trackingLink equals to UPDATED_TRACKING_LINK
+        defaultAwbShouldNotBeFound("trackingLink.equals=" + UPDATED_TRACKING_LINK);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByTrackingLinkIsInShouldWork() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where trackingLink in DEFAULT_TRACKING_LINK or UPDATED_TRACKING_LINK
+        defaultAwbShouldBeFound("trackingLink.in=" + DEFAULT_TRACKING_LINK + "," + UPDATED_TRACKING_LINK);
+
+        // Get all the awbList where trackingLink equals to UPDATED_TRACKING_LINK
+        defaultAwbShouldNotBeFound("trackingLink.in=" + UPDATED_TRACKING_LINK);
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByTrackingLinkIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        awbRepository.saveAndFlush(awb);
+
+        // Get all the awbList where trackingLink is not null
+        defaultAwbShouldBeFound("trackingLink.specified=true");
+
+        // Get all the awbList where trackingLink is null
+        defaultAwbShouldNotBeFound("trackingLink.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllAwbsByChannelIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Channel channel = ChannelResourceIntTest.createEntity(em);
+        em.persist(channel);
+        em.flush();
+        awb.setChannel(channel);
+        awbRepository.saveAndFlush(awb);
+        Long channelId = channel.getId();
+
+        // Get all the awbList where channel equals to channelId
+        defaultAwbShouldBeFound("channelId.equals=" + channelId);
+
+        // Get all the awbList where channel equals to channelId + 1
+        defaultAwbShouldNotBeFound("channelId.equals=" + (channelId + 1));
     }
 
 
@@ -703,7 +755,8 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$.[*].createDate").value(hasItem(DEFAULT_CREATE_DATE.toString())))
             .andExpect(jsonPath("$.[*].returnAwbNumber").value(hasItem(DEFAULT_RETURN_AWB_NUMBER.toString())))
             .andExpect(jsonPath("$.[*].returnAwbBarCode").value(hasItem(DEFAULT_RETURN_AWB_BAR_CODE.toString())))
-            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())));
+            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())))
+            .andExpect(jsonPath("$.[*].trackingLink").value(hasItem(DEFAULT_TRACKING_LINK.toString())));
     }
 
     /**
@@ -716,6 +769,7 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
     }
+
 
     @Test
     @Transactional
@@ -730,7 +784,7 @@ public class AwbResourceIntTest {
     public void updateAwb() throws Exception {
         // Initialize the database
         awbRepository.saveAndFlush(awb);
-
+        awbSearchRepository.save(awb);
         int databaseSizeBeforeUpdate = awbRepository.findAll().size();
 
         // Update the awb
@@ -744,7 +798,8 @@ public class AwbResourceIntTest {
             .createDate(UPDATED_CREATE_DATE)
             .returnAwbNumber(UPDATED_RETURN_AWB_NUMBER)
             .returnAwbBarCode(UPDATED_RETURN_AWB_BAR_CODE)
-            .isBrightAwb(UPDATED_IS_BRIGHT_AWB);
+            .isBrightAwb(UPDATED_IS_BRIGHT_AWB)
+            .trackingLink(UPDATED_TRACKING_LINK);
         AwbDTO awbDTO = awbMapper.toDto(updatedAwb);
 
         restAwbMockMvc.perform(put("/api/awbs")
@@ -763,9 +818,11 @@ public class AwbResourceIntTest {
         assertThat(testAwb.getReturnAwbNumber()).isEqualTo(UPDATED_RETURN_AWB_NUMBER);
         assertThat(testAwb.getReturnAwbBarCode()).isEqualTo(UPDATED_RETURN_AWB_BAR_CODE);
         assertThat(testAwb.isIsBrightAwb()).isEqualTo(UPDATED_IS_BRIGHT_AWB);
+        assertThat(testAwb.getTrackingLink()).isEqualTo(UPDATED_TRACKING_LINK);
 
         // Validate the Awb in Elasticsearch
-        verify(mockAwbSearchRepository, times(1)).save(testAwb);
+        Awb awbEs = awbSearchRepository.findById(testAwb.getId()).get();
+        assertThat(awbEs).isEqualToIgnoringGivenFields(testAwb);
     }
 
     @Test
@@ -780,14 +837,11 @@ public class AwbResourceIntTest {
         restAwbMockMvc.perform(put("/api/awbs")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(awbDTO)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isCreated());
 
         // Validate the Awb in the database
         List<Awb> awbList = awbRepository.findAll();
-        assertThat(awbList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Awb in Elasticsearch
-        verify(mockAwbSearchRepository, times(0)).save(awb);
+        assertThat(awbList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
@@ -795,7 +849,7 @@ public class AwbResourceIntTest {
     public void deleteAwb() throws Exception {
         // Initialize the database
         awbRepository.saveAndFlush(awb);
-
+        awbSearchRepository.save(awb);
         int databaseSizeBeforeDelete = awbRepository.findAll().size();
 
         // Get the awb
@@ -803,12 +857,13 @@ public class AwbResourceIntTest {
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
+        // Validate Elasticsearch is empty
+        boolean awbExistsInEs = awbSearchRepository.existsById(awb.getId());
+        assertThat(awbExistsInEs).isFalse();
+
         // Validate the database is empty
         List<Awb> awbList = awbRepository.findAll();
         assertThat(awbList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Awb in Elasticsearch
-        verify(mockAwbSearchRepository, times(1)).deleteById(awb.getId());
     }
 
     @Test
@@ -816,8 +871,8 @@ public class AwbResourceIntTest {
     public void searchAwb() throws Exception {
         // Initialize the database
         awbRepository.saveAndFlush(awb);
-        when(mockAwbSearchRepository.search(queryStringQuery("id:" + awb.getId())))
-            .thenReturn(Collections.singletonList(awb));
+        awbSearchRepository.save(awb);
+
         // Search the awb
         restAwbMockMvc.perform(get("/api/_search/awbs?query=id:" + awb.getId()))
             .andExpect(status().isOk())
@@ -829,7 +884,8 @@ public class AwbResourceIntTest {
             .andExpect(jsonPath("$.[*].createDate").value(hasItem(DEFAULT_CREATE_DATE.toString())))
             .andExpect(jsonPath("$.[*].returnAwbNumber").value(hasItem(DEFAULT_RETURN_AWB_NUMBER.toString())))
             .andExpect(jsonPath("$.[*].returnAwbBarCode").value(hasItem(DEFAULT_RETURN_AWB_BAR_CODE.toString())))
-            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())));
+            .andExpect(jsonPath("$.[*].isBrightAwb").value(hasItem(DEFAULT_IS_BRIGHT_AWB.booleanValue())))
+            .andExpect(jsonPath("$.[*].trackingLink").value(hasItem(DEFAULT_TRACKING_LINK.toString())));
     }
 
     @Test

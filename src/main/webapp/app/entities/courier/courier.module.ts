@@ -1,29 +1,51 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { HkLogisticsSharedModule } from 'app/shared';
+import { HkLogisticsSharedModule } from '../../shared';
 import {
+    CourierService,
+    CourierPopupService,
     CourierComponent,
     CourierDetailComponent,
-    CourierUpdateComponent,
+    CourierDialogComponent,
+    CourierPopupComponent,
     CourierDeletePopupComponent,
     CourierDeleteDialogComponent,
     courierRoute,
-    courierPopupRoute
+    courierPopupRoute,
+    CourierResolvePagingParams,
 } from './';
 
-const ENTITY_STATES = [...courierRoute, ...courierPopupRoute];
+const ENTITY_STATES = [
+    ...courierRoute,
+    ...courierPopupRoute,
+];
 
 @NgModule({
-    imports: [HkLogisticsSharedModule, RouterModule.forChild(ENTITY_STATES)],
+    imports: [
+        HkLogisticsSharedModule,
+        RouterModule.forChild(ENTITY_STATES)
+    ],
     declarations: [
         CourierComponent,
         CourierDetailComponent,
-        CourierUpdateComponent,
+        CourierDialogComponent,
         CourierDeleteDialogComponent,
-        CourierDeletePopupComponent
+        CourierPopupComponent,
+        CourierDeletePopupComponent,
     ],
-    entryComponents: [CourierComponent, CourierUpdateComponent, CourierDeleteDialogComponent, CourierDeletePopupComponent],
+    entryComponents: [
+        CourierComponent,
+        CourierDialogComponent,
+        CourierPopupComponent,
+        CourierDeleteDialogComponent,
+        CourierDeletePopupComponent,
+    ],
+    providers: [
+        CourierService,
+        CourierPopupService,
+        CourierResolvePagingParams,
+    ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HkLogisticsCourierModule {}

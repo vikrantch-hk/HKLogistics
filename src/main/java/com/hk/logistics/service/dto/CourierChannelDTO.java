@@ -1,6 +1,9 @@
 package com.hk.logistics.service.dto;
 
+
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -19,6 +22,8 @@ public class CourierChannelDTO implements Serializable {
     private Long channelId;
 
     private String channelName;
+
+    private Long courierId;
 
     public Long getId() {
         return id;
@@ -68,6 +73,14 @@ public class CourierChannelDTO implements Serializable {
         this.channelName = channelName;
     }
 
+    public Long getCourierId() {
+        return courierId;
+    }
+
+    public void setCourierId(Long courierId) {
+        this.courierId = courierId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -78,7 +91,7 @@ public class CourierChannelDTO implements Serializable {
         }
 
         CourierChannelDTO courierChannelDTO = (CourierChannelDTO) o;
-        if (courierChannelDTO.getId() == null || getId() == null) {
+        if(courierChannelDTO.getId() == null || getId() == null) {
             return false;
         }
         return Objects.equals(getId(), courierChannelDTO.getId());
@@ -96,8 +109,6 @@ public class CourierChannelDTO implements Serializable {
             ", minWeight=" + getMinWeight() +
             ", maxWeight=" + getMaxWeight() +
             ", natureOfProduct='" + getNatureOfProduct() + "'" +
-            ", channel=" + getChannelId() +
-            ", channel='" + getChannelName() + "'" +
             "}";
     }
 }

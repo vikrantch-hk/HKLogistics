@@ -13,11 +13,12 @@ import com.hk.logistics.domain.VendorWHCourierMapping;
 
 
 /**
- * Spring Data  repository for the Awb entity.
+ * Spring Data JPA repository for the Awb entity.
  */
 @SuppressWarnings("unused")
 @Repository
 public interface AwbRepository extends JpaRepository<Awb, Long>, JpaSpecificationExecutor<Awb> {
+
 	List<Awb> findByVendorWHCourierMappingAndCodAndAwbStatus(VendorWHCourierMapping vendorWHCourierMapping,Boolean cod,AwbStatus awbStatus);
 	Awb findByVendorWHCourierMappingAndAwbNumber(VendorWHCourierMapping vendorWHCourierMapping,String awbNumber);
 	Awb findByVendorWHCourierMappingAndAwbNumberAndCod(VendorWHCourierMapping vendorWHCourierMapping,String awbNumber,Boolean isCod);

@@ -1,12 +1,13 @@
 package com.hk.logistics.service;
 
+
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ import com.hk.logistics.service.mapper.CourierMapper;
 
 /**
  * Service for executing complex queries for Courier entities in the database.
- * The main input is a {@link CourierCriteria} which gets converted to {@link Specification},
+ * The main input is a {@link CourierCriteria} which get's converted to {@link Specifications},
  * in a way that all the filters must apply.
  * It returns a {@link List} of {@link CourierDTO} or a {@link Page} of {@link CourierDTO} which fulfills the criteria.
  */
@@ -32,6 +33,7 @@ import com.hk.logistics.service.mapper.CourierMapper;
 public class CourierQueryService extends QueryService<Courier> {
 
     private final Logger log = LoggerFactory.getLogger(CourierQueryService.class);
+
 
     private final CourierRepository courierRepository;
 
@@ -53,7 +55,7 @@ public class CourierQueryService extends QueryService<Courier> {
     @Transactional(readOnly = true)
     public List<CourierDTO> findByCriteria(CourierCriteria criteria) {
         log.debug("find by criteria : {}", criteria);
-        final Specification<Courier> specification = createSpecification(criteria);
+        final Specifications<Courier> specification = createSpecification(criteria);
         return courierMapper.toDto(courierRepository.findAll(specification));
     }
 
@@ -66,22 +68,25 @@ public class CourierQueryService extends QueryService<Courier> {
     @Transactional(readOnly = true)
     public Page<CourierDTO> findByCriteria(CourierCriteria criteria, Pageable page) {
         log.debug("find by criteria : {}, page: {}", criteria, page);
-        final Specification<Courier> specification = createSpecification(criteria);
-        return courierRepository.findAll(specification, page)
-            .map(courierMapper::toDto);
+        final Specifications<Courier> specification = createSpecification(criteria);
+        final Page<Courier> result = courierRepository.findAll(specification, page);
+        return result.map(courierMapper::toDto);
     }
 
     /**
-     * Function to convert CourierCriteria to a {@link Specification}
+     * Function to convert CourierCriteria to a {@link Specifications}
      */
-    private Specification<Courier> createSpecification(CourierCriteria criteria) {
-        Specification<Courier> specification = Specification.where(null);
+    private Specifications<Courier> createSpecification(CourierCriteria criteria) {
+        Specifications<Courier> specification = Specifications.where(null);
         if (criteria != null) {
             if (criteria.getId() != null) {
                 specification = specification.and(buildSpecification(criteria.getId(), Courier_.id));
             }
             if (criteria.getName() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getName(), Courier_.name));
+            }
+            if (criteria.getShortCode() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getShortCode(), Courier_.shortCode));
             }
             if (criteria.getActive() != null) {
                 specification = specification.and(buildSpecification(criteria.getActive(), Courier_.active));

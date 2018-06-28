@@ -1,14 +1,15 @@
 /* tslint:disable max-line-length */
-import { ComponentFixture, TestBed, inject, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, async, inject, fakeAsync, tick } from '@angular/core/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
 import { JhiEventManager } from 'ng-jhipster';
 
 import { HkLogisticsTestModule } from '../../../test.module';
-import { CourierDeleteDialogComponent } from 'app/entities/courier/courier-delete-dialog.component';
-import { CourierService } from 'app/entities/courier/courier.service';
+import { CourierDeleteDialogComponent } from '../../../../../../main/webapp/app/entities/courier/courier-delete-dialog.component';
+import { CourierService } from '../../../../../../main/webapp/app/entities/courier/courier.service';
 
 describe('Component Tests', () => {
+
     describe('Courier Management Delete Component', () => {
         let comp: CourierDeleteDialogComponent;
         let fixture: ComponentFixture<CourierDeleteDialogComponent>;
@@ -16,13 +17,19 @@ describe('Component Tests', () => {
         let mockEventManager: any;
         let mockActiveModal: any;
 
-        beforeEach(() => {
+        beforeEach(async(() => {
             TestBed.configureTestingModule({
                 imports: [HkLogisticsTestModule],
-                declarations: [CourierDeleteDialogComponent]
+                declarations: [CourierDeleteDialogComponent],
+                providers: [
+                    CourierService
+                ]
             })
-                .overrideTemplate(CourierDeleteDialogComponent, '')
-                .compileComponents();
+            .overrideTemplate(CourierDeleteDialogComponent, '')
+            .compileComponents();
+        }));
+
+        beforeEach(() => {
             fixture = TestBed.createComponent(CourierDeleteDialogComponent);
             comp = fixture.componentInstance;
             service = fixture.debugElement.injector.get(CourierService);
@@ -31,13 +38,11 @@ describe('Component Tests', () => {
         });
 
         describe('confirmDelete', () => {
-            it(
-                'Should call delete service on confirmDelete',
-                inject(
-                    [],
+            it('Should call delete service on confirmDelete',
+                inject([],
                     fakeAsync(() => {
                         // GIVEN
-                        spyOn(service, 'delete').and.returnValue(of({}));
+                        spyOn(service, 'delete').and.returnValue(Observable.of({}));
 
                         // WHEN
                         comp.confirmDelete(123);
@@ -52,4 +57,5 @@ describe('Component Tests', () => {
             );
         });
     });
+
 });

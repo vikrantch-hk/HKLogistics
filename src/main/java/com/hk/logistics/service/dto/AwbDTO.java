@@ -1,8 +1,11 @@
 package com.hk.logistics.service.dto;
 
+
 import java.time.LocalDate;
 import javax.validation.constraints.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -31,9 +34,12 @@ public class AwbDTO implements Serializable {
     @NotNull
     private Boolean isBrightAwb;
 
-    private Long courierId;
+    @NotNull
+    private String trackingLink;
 
-    private String courierName;
+    private Long channelId;
+
+    private String channelName;
 
     private Long vendorWHCourierMappingId;
 
@@ -105,20 +111,28 @@ public class AwbDTO implements Serializable {
         this.isBrightAwb = isBrightAwb;
     }
 
-    public Long getCourierId() {
-        return courierId;
+    public String getTrackingLink() {
+        return trackingLink;
     }
 
-    public void setCourierId(Long courierId) {
-        this.courierId = courierId;
+    public void setTrackingLink(String trackingLink) {
+        this.trackingLink = trackingLink;
     }
 
-    public String getCourierName() {
-        return courierName;
+    public Long getChannelId() {
+        return channelId;
     }
 
-    public void setCourierName(String courierName) {
-        this.courierName = courierName;
+    public void setChannelId(Long channelId) {
+        this.channelId = channelId;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
     }
 
     public Long getVendorWHCourierMappingId() {
@@ -155,7 +169,7 @@ public class AwbDTO implements Serializable {
         }
 
         AwbDTO awbDTO = (AwbDTO) o;
-        if (awbDTO.getId() == null || getId() == null) {
+        if(awbDTO.getId() == null || getId() == null) {
             return false;
         }
         return Objects.equals(getId(), awbDTO.getId());
@@ -177,11 +191,7 @@ public class AwbDTO implements Serializable {
             ", returnAwbNumber='" + getReturnAwbNumber() + "'" +
             ", returnAwbBarCode='" + getReturnAwbBarCode() + "'" +
             ", isBrightAwb='" + isIsBrightAwb() + "'" +
-            ", courier=" + getCourierId() +
-            ", courier='" + getCourierName() + "'" +
-            ", vendorWHCourierMapping=" + getVendorWHCourierMappingId() +
-            ", awbStatus=" + getAwbStatusId() +
-            ", awbStatus='" + getAwbStatusStatus() + "'" +
+            ", trackingLink='" + getTrackingLink() + "'" +
             "}";
     }
 }

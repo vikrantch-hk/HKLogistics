@@ -7,8 +7,8 @@ import com.hk.logistics.domain.VendorWHCourierMapping;
 import com.hk.logistics.domain.Channel;
 import com.hk.logistics.domain.Courier;
 import com.hk.logistics.repository.CourierChannelRepository;
-import com.hk.logistics.repository.search.CourierChannelSearchRepository;
 import com.hk.logistics.service.CourierChannelService;
+import com.hk.logistics.repository.search.CourierChannelSearchRepository;
 import com.hk.logistics.service.dto.CourierChannelDTO;
 import com.hk.logistics.service.mapper.CourierChannelMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
@@ -30,15 +30,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
-
 
 import static com.hk.logistics.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,21 +59,14 @@ public class CourierChannelResourceIntTest {
     @Autowired
     private CourierChannelRepository courierChannelRepository;
 
-
     @Autowired
     private CourierChannelMapper courierChannelMapper;
-    
 
     @Autowired
     private CourierChannelService courierChannelService;
 
-    /**
-     * This repository is mocked in the com.hk.logistics.repository.search test package.
-     *
-     * @see com.hk.logistics.repository.search.CourierChannelSearchRepositoryMockConfiguration
-     */
     @Autowired
-    private CourierChannelSearchRepository mockCourierChannelSearchRepository;
+    private CourierChannelSearchRepository courierChannelSearchRepository;
 
     @Autowired
     private CourierChannelQueryService courierChannelQueryService;
@@ -125,6 +114,7 @@ public class CourierChannelResourceIntTest {
 
     @Before
     public void initTest() {
+        courierChannelSearchRepository.deleteAll();
         courierChannel = createEntity(em);
     }
 
@@ -149,7 +139,8 @@ public class CourierChannelResourceIntTest {
         assertThat(testCourierChannel.getNatureOfProduct()).isEqualTo(DEFAULT_NATURE_OF_PRODUCT);
 
         // Validate the CourierChannel in Elasticsearch
-        verify(mockCourierChannelSearchRepository, times(1)).save(testCourierChannel);
+        CourierChannel courierChannelEs = courierChannelSearchRepository.findById(testCourierChannel.getId()).get();
+        assertThat(courierChannelEs).isEqualToIgnoringGivenFields(testCourierChannel);
     }
 
     @Test
@@ -170,9 +161,6 @@ public class CourierChannelResourceIntTest {
         // Validate the CourierChannel in the database
         List<CourierChannel> courierChannelList = courierChannelRepository.findAll();
         assertThat(courierChannelList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the CourierChannel in Elasticsearch
-        verify(mockCourierChannelSearchRepository, times(0)).save(courierChannel);
     }
 
     @Test
@@ -190,7 +178,6 @@ public class CourierChannelResourceIntTest {
             .andExpect(jsonPath("$.[*].maxWeight").value(hasItem(DEFAULT_MAX_WEIGHT.doubleValue())))
             .andExpect(jsonPath("$.[*].natureOfProduct").value(hasItem(DEFAULT_NATURE_OF_PRODUCT.toString())));
     }
-    
 
     @Test
     @Transactional
@@ -370,7 +357,7 @@ public class CourierChannelResourceIntTest {
         Courier courier = CourierResourceIntTest.createEntity(em);
         em.persist(courier);
         em.flush();
-        courierChannel.addCourier(courier);
+        courierChannel.setCourier(courier);
         courierChannelRepository.saveAndFlush(courierChannel);
         Long courierId = courier.getId();
 
@@ -405,6 +392,7 @@ public class CourierChannelResourceIntTest {
             .andExpect(jsonPath("$").isEmpty());
     }
 
+
     @Test
     @Transactional
     public void getNonExistingCourierChannel() throws Exception {
@@ -418,7 +406,7 @@ public class CourierChannelResourceIntTest {
     public void updateCourierChannel() throws Exception {
         // Initialize the database
         courierChannelRepository.saveAndFlush(courierChannel);
-
+        courierChannelSearchRepository.save(courierChannel);
         int databaseSizeBeforeUpdate = courierChannelRepository.findAll().size();
 
         // Update the courierChannel
@@ -445,7 +433,8 @@ public class CourierChannelResourceIntTest {
         assertThat(testCourierChannel.getNatureOfProduct()).isEqualTo(UPDATED_NATURE_OF_PRODUCT);
 
         // Validate the CourierChannel in Elasticsearch
-        verify(mockCourierChannelSearchRepository, times(1)).save(testCourierChannel);
+        CourierChannel courierChannelEs = courierChannelSearchRepository.findById(testCourierChannel.getId()).get();
+        assertThat(courierChannelEs).isEqualToIgnoringGivenFields(testCourierChannel);
     }
 
     @Test
@@ -460,14 +449,11 @@ public class CourierChannelResourceIntTest {
         restCourierChannelMockMvc.perform(put("/api/courier-channels")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(courierChannelDTO)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isCreated());
 
         // Validate the CourierChannel in the database
         List<CourierChannel> courierChannelList = courierChannelRepository.findAll();
-        assertThat(courierChannelList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the CourierChannel in Elasticsearch
-        verify(mockCourierChannelSearchRepository, times(0)).save(courierChannel);
+        assertThat(courierChannelList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
@@ -475,7 +461,7 @@ public class CourierChannelResourceIntTest {
     public void deleteCourierChannel() throws Exception {
         // Initialize the database
         courierChannelRepository.saveAndFlush(courierChannel);
-
+        courierChannelSearchRepository.save(courierChannel);
         int databaseSizeBeforeDelete = courierChannelRepository.findAll().size();
 
         // Get the courierChannel
@@ -483,12 +469,13 @@ public class CourierChannelResourceIntTest {
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
+        // Validate Elasticsearch is empty
+        boolean courierChannelExistsInEs = courierChannelSearchRepository.existsById(courierChannel.getId());
+        assertThat(courierChannelExistsInEs).isFalse();
+
         // Validate the database is empty
         List<CourierChannel> courierChannelList = courierChannelRepository.findAll();
         assertThat(courierChannelList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the CourierChannel in Elasticsearch
-        verify(mockCourierChannelSearchRepository, times(1)).deleteById(courierChannel.getId());
     }
 
     @Test
@@ -496,8 +483,8 @@ public class CourierChannelResourceIntTest {
     public void searchCourierChannel() throws Exception {
         // Initialize the database
         courierChannelRepository.saveAndFlush(courierChannel);
-        when(mockCourierChannelSearchRepository.search(queryStringQuery("id:" + courierChannel.getId())))
-            .thenReturn(Collections.singletonList(courierChannel));
+        courierChannelSearchRepository.save(courierChannel);
+
         // Search the courierChannel
         restCourierChannelMockMvc.perform(get("/api/_search/courier-channels?query=id:" + courierChannel.getId()))
             .andExpect(status().isOk())

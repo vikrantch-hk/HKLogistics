@@ -1,6 +1,5 @@
 package com.hk.logistics.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -53,19 +52,17 @@ public class Awb implements Serializable {
     @Column(name = "is_bright_awb", nullable = false)
     private Boolean isBrightAwb;
 
-    @Column(name = "tracking_link")
+    @NotNull
+    @Column(name = "tracking_link", nullable = false)
     private String trackingLink;
-    
-    @ManyToOne
-    @JsonIgnoreProperties("")
-    private Courier courier;
 
     @ManyToOne
-    @JsonIgnoreProperties("")
+    private Channel channel;
+
+    @ManyToOne
     private VendorWHCourierMapping vendorWHCourierMapping;
 
     @ManyToOne
-    @JsonIgnoreProperties("")
     private AwbStatus awbStatus;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
@@ -155,19 +152,6 @@ public class Awb implements Serializable {
         this.returnAwbBarCode = returnAwbBarCode;
     }
 
-    public String getTrackingLink() {
-        return trackingLink;
-    }
-
-    public Awb trackingLink(String trackingLink) {
-        this.trackingLink = trackingLink;
-        return this;
-    }
-
-    public void setTrackingLink(String trackingLink) {
-        this.trackingLink = trackingLink;
-    }
-    
     public Boolean isIsBrightAwb() {
         return isBrightAwb;
     }
@@ -181,17 +165,30 @@ public class Awb implements Serializable {
         this.isBrightAwb = isBrightAwb;
     }
 
-    public Courier getCourier() {
-        return courier;
+    public String getTrackingLink() {
+        return trackingLink;
     }
 
-    public Awb courier(Courier courier) {
-        this.courier = courier;
+    public Awb trackingLink(String trackingLink) {
+        this.trackingLink = trackingLink;
         return this;
     }
 
-    public void setCourier(Courier courier) {
-        this.courier = courier;
+    public void setTrackingLink(String trackingLink) {
+        this.trackingLink = trackingLink;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public Awb channel(Channel channel) {
+        this.channel = channel;
+        return this;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     public VendorWHCourierMapping getVendorWHCourierMapping() {
@@ -252,6 +249,7 @@ public class Awb implements Serializable {
             ", returnAwbNumber='" + getReturnAwbNumber() + "'" +
             ", returnAwbBarCode='" + getReturnAwbBarCode() + "'" +
             ", isBrightAwb='" + isIsBrightAwb() + "'" +
+            ", trackingLink='" + getTrackingLink() + "'" +
             "}";
     }
 }

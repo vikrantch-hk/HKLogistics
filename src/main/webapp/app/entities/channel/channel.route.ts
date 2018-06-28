@@ -1,28 +1,10 @@
-import { Injectable } from '@angular/core';
-import { HttpResponse } from '@angular/common/http';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
-import { UserRouteAccessService } from 'app/core';
-import { Observable } from 'rxjs';
-import { Channel } from 'app/shared/model/channel.model';
-import { ChannelService } from './channel.service';
+import { Routes } from '@angular/router';
+
+import { UserRouteAccessService } from '../../shared';
 import { ChannelComponent } from './channel.component';
 import { ChannelDetailComponent } from './channel-detail.component';
-import { ChannelUpdateComponent } from './channel-update.component';
+import { ChannelPopupComponent } from './channel-dialog.component';
 import { ChannelDeletePopupComponent } from './channel-delete-dialog.component';
-import { IChannel } from 'app/shared/model/channel.model';
-
-@Injectable({ providedIn: 'root' })
-export class ChannelResolve implements Resolve<IChannel> {
-    constructor(private service: ChannelService) {}
-
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-        const id = route.params['id'] ? route.params['id'] : null;
-        if (id) {
-            return this.service.find(id).map((channel: HttpResponse<Channel>) => channel.body);
-        }
-        return Observable.of(new Channel());
-    }
-}
 
 export const channelRoute: Routes = [
     {
@@ -33,37 +15,9 @@ export const channelRoute: Routes = [
             pageTitle: 'Channels'
         },
         canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'channel/:id/view',
+    }, {
+        path: 'channel/:id',
         component: ChannelDetailComponent,
-        resolve: {
-            channel: ChannelResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'Channels'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'channel/new',
-        component: ChannelUpdateComponent,
-        resolve: {
-            channel: ChannelResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'Channels'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'channel/:id/edit',
-        component: ChannelUpdateComponent,
-        resolve: {
-            channel: ChannelResolve
-        },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'Channels'
@@ -74,11 +28,28 @@ export const channelRoute: Routes = [
 
 export const channelPopupRoute: Routes = [
     {
+        path: 'channel-new',
+        component: ChannelPopupComponent,
+        data: {
+            authorities: ['ROLE_USER'],
+            pageTitle: 'Channels'
+        },
+        canActivate: [UserRouteAccessService],
+        outlet: 'popup'
+    },
+    {
+        path: 'channel/:id/edit',
+        component: ChannelPopupComponent,
+        data: {
+            authorities: ['ROLE_USER'],
+            pageTitle: 'Channels'
+        },
+        canActivate: [UserRouteAccessService],
+        outlet: 'popup'
+    },
+    {
         path: 'channel/:id/delete',
         component: ChannelDeletePopupComponent,
-        resolve: {
-            channel: ChannelResolve
-        },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'Channels'

@@ -82,7 +82,7 @@ public class CourierResource {
     public ResponseEntity<CourierDTO> updateCourier(@Valid @RequestBody CourierDTO courierDTO) throws URISyntaxException {
         log.debug("REST request to update Courier : {}", courierDTO);
         if (courierDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            return createCourier(courierDTO);
         }
         CourierDTO result = courierService.save(courierDTO);
         return ResponseEntity.ok()
@@ -116,8 +116,8 @@ public class CourierResource {
     @Timed
     public ResponseEntity<CourierDTO> getCourier(@PathVariable Long id) {
         log.debug("REST request to get Courier : {}", id);
-        Optional<CourierDTO> courierDTO = courierService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(courierDTO);
+        CourierDTO courierDTO = courierService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(courierDTO));
     }
 
     /**

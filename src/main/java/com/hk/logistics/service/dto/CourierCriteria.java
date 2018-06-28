@@ -30,6 +30,8 @@ public class CourierCriteria implements Serializable {
 
     private StringFilter name;
 
+    private StringFilter shortCode;
+
     private BooleanFilter active;
 
     private StringFilter trackingParameter;
@@ -65,6 +67,14 @@ public class CourierCriteria implements Serializable {
 
     public void setName(StringFilter name) {
         this.name = name;
+    }
+
+    public StringFilter getShortCode() {
+        return shortCode;
+    }
+
+    public void setShortCode(StringFilter shortCode) {
+        this.shortCode = shortCode;
     }
 
     public BooleanFilter getActive() {
@@ -144,6 +154,7 @@ public class CourierCriteria implements Serializable {
         return "CourierCriteria{" +
                 (id != null ? "id=" + id + ", " : "") +
                 (name != null ? "name=" + name + ", " : "") +
+                (shortCode != null ? "shortCode=" + shortCode + ", " : "") +
                 (active != null ? "active=" + active + ", " : "") +
                 (trackingParameter != null ? "trackingParameter=" + trackingParameter + ", " : "") +
                 (trackingUrl != null ? "trackingUrl=" + trackingUrl + ", " : "") +

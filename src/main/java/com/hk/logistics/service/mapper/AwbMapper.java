@@ -8,17 +8,17 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity Awb and its DTO AwbDTO.
  */
-@Mapper(componentModel = "spring", uses = {CourierMapper.class, VendorWHCourierMappingMapper.class, AwbStatusMapper.class})
+@Mapper(componentModel = "spring", uses = {ChannelMapper.class, VendorWHCourierMappingMapper.class, AwbStatusMapper.class})
 public interface AwbMapper extends EntityMapper<AwbDTO, Awb> {
 
-    @Mapping(source = "courier.id", target = "courierId")
-    @Mapping(source = "courier.name", target = "courierName")
+    @Mapping(source = "channel.id", target = "channelId")
+    @Mapping(source = "channel.name", target = "channelName")
     @Mapping(source = "vendorWHCourierMapping.id", target = "vendorWHCourierMappingId")
     @Mapping(source = "awbStatus.id", target = "awbStatusId")
     @Mapping(source = "awbStatus.status", target = "awbStatusStatus")
     AwbDTO toDto(Awb awb);
 
-    @Mapping(source = "courierId", target = "courier")
+    @Mapping(source = "channelId", target = "channel")
     @Mapping(source = "vendorWHCourierMappingId", target = "vendorWHCourierMapping")
     @Mapping(source = "awbStatusId", target = "awbStatus")
     Awb toEntity(AwbDTO awbDTO);

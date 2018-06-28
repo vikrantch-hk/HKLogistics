@@ -1,25 +1,17 @@
 package com.hk.logistics.domain;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.elasticsearch.annotations.Document;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+
+import org.springframework.data.elasticsearch.annotations.Document;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Objects;
 
 /**
  * A Courier.
@@ -39,6 +31,10 @@ public class Courier implements Serializable {
     @NotNull
     @Column(name = "name", nullable = false)
     private String name;
+
+    @NotNull
+    @Column(name = "short_code", nullable = false)
+    private String shortCode;
 
     @NotNull
     @Column(name = "active", nullable = false)
@@ -62,12 +58,13 @@ public class Courier implements Serializable {
     @Column(name = "reverse_pickup")
     private Boolean reversePickup;
 
-    @OneToMany(mappedBy = "courier")
-    @JsonIgnore
-    private Set<CourierChannel> courierChannels = new HashSet<>();
-
     @ManyToOne
     private CourierGroup courierGroup;
+
+    @OneToMany(mappedBy = "courier")
+    @JsonIgnore
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<CourierChannel> courierChannels = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -89,6 +86,19 @@ public class Courier implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getShortCode() {
+        return shortCode;
+    }
+
+    public Courier shortCode(String shortCode) {
+        this.shortCode = shortCode;
+        return this;
+    }
+
+    public void setShortCode(String shortCode) {
+        this.shortCode = shortCode;
     }
 
     public Boolean isActive() {
@@ -194,6 +204,31 @@ public class Courier implements Serializable {
     public void setCourierGroup(CourierGroup courierGroup) {
         this.courierGroup = courierGroup;
     }
+
+    public Set<CourierChannel> getCourierChannels() {
+        return courierChannels;
+    }
+
+    public Courier courierChannels(Set<CourierChannel> courierChannels) {
+        this.courierChannels = courierChannels;
+        return this;
+    }
+
+    public Courier addCourierChannel(CourierChannel courierChannel) {
+        this.courierChannels.add(courierChannel);
+        courierChannel.setCourier(this);
+        return this;
+    }
+
+    public Courier removeCourierChannel(CourierChannel courierChannel) {
+        this.courierChannels.remove(courierChannel);
+        courierChannel.setCourier(null);
+        return this;
+    }
+
+    public void setCourierChannels(Set<CourierChannel> courierChannels) {
+        this.courierChannels = courierChannels;
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override
@@ -221,6 +256,7 @@ public class Courier implements Serializable {
         return "Courier{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", shortCode='" + getShortCode() + "'" +
             ", active='" + isActive() + "'" +
             ", trackingParameter='" + getTrackingParameter() + "'" +
             ", trackingUrl='" + getTrackingUrl() + "'" +

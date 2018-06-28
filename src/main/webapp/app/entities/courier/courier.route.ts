@@ -1,27 +1,26 @@
 import { Injectable } from '@angular/core';
-import { HttpResponse } from '@angular/common/http';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
-import { JhiPaginationUtil, JhiResolvePagingParams } from 'ng-jhipster';
-import { UserRouteAccessService } from 'app/core';
-import { Observable } from 'rxjs';
-import { Courier } from 'app/shared/model/courier.model';
-import { CourierService } from './courier.service';
+import { JhiPaginationUtil } from 'ng-jhipster';
+
+import { UserRouteAccessService } from '../../shared';
 import { CourierComponent } from './courier.component';
 import { CourierDetailComponent } from './courier-detail.component';
-import { CourierUpdateComponent } from './courier-update.component';
+import { CourierPopupComponent } from './courier-dialog.component';
 import { CourierDeletePopupComponent } from './courier-delete-dialog.component';
-import { ICourier } from 'app/shared/model/courier.model';
 
-@Injectable({ providedIn: 'root' })
-export class CourierResolve implements Resolve<ICourier> {
-    constructor(private service: CourierService) {}
+@Injectable()
+export class CourierResolvePagingParams implements Resolve<any> {
+
+    constructor(private paginationUtil: JhiPaginationUtil) {}
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-        const id = route.params['id'] ? route.params['id'] : null;
-        if (id) {
-            return this.service.find(id).map((courier: HttpResponse<Courier>) => courier.body);
-        }
-        return Observable.of(new Courier());
+        const page = route.queryParams['page'] ? route.queryParams['page'] : '1';
+        const sort = route.queryParams['sort'] ? route.queryParams['sort'] : 'id,asc';
+        return {
+            page: this.paginationUtil.parsePage(page),
+            predicate: this.paginationUtil.parsePredicate(sort),
+            ascending: this.paginationUtil.parseAscending(sort)
+      };
     }
 }
 
@@ -30,45 +29,16 @@ export const courierRoute: Routes = [
         path: 'courier',
         component: CourierComponent,
         resolve: {
-            pagingParams: JhiResolvePagingParams
+            'pagingParams': CourierResolvePagingParams
         },
         data: {
             authorities: ['ROLE_USER'],
-            defaultSort: 'id,asc',
             pageTitle: 'Couriers'
         },
         canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'courier/:id/view',
+    }, {
+        path: 'courier/:id',
         component: CourierDetailComponent,
-        resolve: {
-            courier: CourierResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'Couriers'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'courier/new',
-        component: CourierUpdateComponent,
-        resolve: {
-            courier: CourierResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'Couriers'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'courier/:id/edit',
-        component: CourierUpdateComponent,
-        resolve: {
-            courier: CourierResolve
-        },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'Couriers'
@@ -79,11 +49,28 @@ export const courierRoute: Routes = [
 
 export const courierPopupRoute: Routes = [
     {
+        path: 'courier-new',
+        component: CourierPopupComponent,
+        data: {
+            authorities: ['ROLE_USER'],
+            pageTitle: 'Couriers'
+        },
+        canActivate: [UserRouteAccessService],
+        outlet: 'popup'
+    },
+    {
+        path: 'courier/:id/edit',
+        component: CourierPopupComponent,
+        data: {
+            authorities: ['ROLE_USER'],
+            pageTitle: 'Couriers'
+        },
+        canActivate: [UserRouteAccessService],
+        outlet: 'popup'
+    },
+    {
         path: 'courier/:id/delete',
         component: CourierDeletePopupComponent,
-        resolve: {
-            courier: CourierResolve
-        },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'Couriers'

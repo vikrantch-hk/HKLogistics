@@ -43,13 +43,20 @@
             "fieldValidateRules": [
                 "required"
             ]
+        },
+        {
+            "fieldName": "trackingLink",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
         }
     ],
     "relationships": [
         {
             "relationshipType": "many-to-one",
-            "relationshipName": "courier",
-            "otherEntityName": "courier",
+            "relationshipName": "channel",
+            "otherEntityName": "channel",
             "otherEntityField": "name"
         },
         {

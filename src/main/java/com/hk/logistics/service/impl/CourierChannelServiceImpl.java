@@ -8,13 +8,11 @@ import com.hk.logistics.service.dto.CourierChannelDTO;
 import com.hk.logistics.service.mapper.CourierChannelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -71,7 +69,6 @@ public class CourierChannelServiceImpl implements CourierChannelService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
-
     /**
      * Get one courierChannel by id.
      *
@@ -80,10 +77,10 @@ public class CourierChannelServiceImpl implements CourierChannelService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<CourierChannelDTO> findOne(Long id) {
+    public CourierChannelDTO findOne(Long id) {
         log.debug("Request to get CourierChannel : {}", id);
-        return courierChannelRepository.findById(id)
-            .map(courierChannelMapper::toDto);
+        CourierChannel courierChannel = courierChannelRepository.findById(id).get();
+        return courierChannelMapper.toDto(courierChannel);
     }
 
     /**

@@ -77,7 +77,7 @@ public class ChannelResource {
     public ResponseEntity<ChannelDTO> updateChannel(@Valid @RequestBody ChannelDTO channelDTO) throws URISyntaxException {
         log.debug("REST request to update Channel : {}", channelDTO);
         if (channelDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            return createChannel(channelDTO);
         }
         ChannelDTO result = channelService.save(channelDTO);
         return ResponseEntity.ok()
@@ -109,8 +109,8 @@ public class ChannelResource {
     @Timed
     public ResponseEntity<ChannelDTO> getChannel(@PathVariable Long id) {
         log.debug("REST request to get Channel : {}", id);
-        Optional<ChannelDTO> channelDTO = channelService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(channelDTO);
+        ChannelDTO channelDTO = channelService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(channelDTO));
     }
 
     /**

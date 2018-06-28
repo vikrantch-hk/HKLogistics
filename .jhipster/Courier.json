@@ -9,6 +9,13 @@
             ]
         },
         {
+            "fieldName": "shortCode",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
             "fieldName": "active",
             "fieldType": "Boolean",
             "fieldValidateRules": [
@@ -48,7 +55,7 @@
             "otherEntityField": "name"
         },
         {
-            "relationshipType": "many-to-one",
+            "relationshipType": "one-to-many",
             "relationshipName": "courierChannel",
             "otherEntityName": "courierChannel",
             "otherEntityField": "id"

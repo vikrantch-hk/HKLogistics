@@ -8,13 +8,11 @@ import com.hk.logistics.service.dto.ChannelDTO;
 import com.hk.logistics.service.mapper.ChannelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -71,7 +69,6 @@ public class ChannelServiceImpl implements ChannelService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
-
     /**
      * Get one channel by id.
      *
@@ -80,10 +77,10 @@ public class ChannelServiceImpl implements ChannelService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<ChannelDTO> findOne(Long id) {
+    public ChannelDTO findOne(Long id) {
         log.debug("Request to get Channel : {}", id);
-        return channelRepository.findById(id)
-            .map(channelMapper::toDto);
+        Channel channel = channelRepository.findById(id).get();
+        return channelMapper.toDto(channel);
     }
 
     /**

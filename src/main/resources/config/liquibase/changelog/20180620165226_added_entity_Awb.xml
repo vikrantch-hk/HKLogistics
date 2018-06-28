@@ -50,7 +50,11 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="courier_id" type="bigint">
+            <column name="tracking_link" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel_id" type="bigint">
                 <constraints nullable="true" />
             </column>
 

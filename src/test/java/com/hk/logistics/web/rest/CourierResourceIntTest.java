@@ -6,8 +6,8 @@ import com.hk.logistics.domain.Courier;
 import com.hk.logistics.domain.CourierGroup;
 import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.repository.CourierRepository;
-import com.hk.logistics.repository.search.CourierSearchRepository;
 import com.hk.logistics.service.CourierService;
+import com.hk.logistics.repository.search.CourierSearchRepository;
 import com.hk.logistics.service.dto.CourierDTO;
 import com.hk.logistics.service.mapper.CourierMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
@@ -20,8 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -31,15 +29,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
-
 
 import static com.hk.logistics.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,6 +48,9 @@ public class CourierResourceIntTest {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
     private static final String UPDATED_NAME = "BBBBBBBBBB";
+
+    private static final String DEFAULT_SHORT_CODE = "AAAAAAAAAA";
+    private static final String UPDATED_SHORT_CODE = "BBBBBBBBBB";
 
     private static final Boolean DEFAULT_ACTIVE = false;
     private static final Boolean UPDATED_ACTIVE = true;
@@ -79,21 +76,14 @@ public class CourierResourceIntTest {
     @Autowired
     private CourierRepository courierRepository;
 
-
     @Autowired
     private CourierMapper courierMapper;
-    
 
     @Autowired
     private CourierService courierService;
 
-    /**
-     * This repository is mocked in the com.hk.logistics.repository.search test package.
-     *
-     * @see com.hk.logistics.repository.search.CourierSearchRepositoryMockConfiguration
-     */
     @Autowired
-    private CourierSearchRepository mockCourierSearchRepository;
+    private CourierSearchRepository courierSearchRepository;
 
     @Autowired
     private CourierQueryService courierQueryService;
@@ -134,6 +124,7 @@ public class CourierResourceIntTest {
     public static Courier createEntity(EntityManager em) {
         Courier courier = new Courier()
             .name(DEFAULT_NAME)
+            .shortCode(DEFAULT_SHORT_CODE)
             .active(DEFAULT_ACTIVE)
             .trackingParameter(DEFAULT_TRACKING_PARAMETER)
             .trackingUrl(DEFAULT_TRACKING_URL)
@@ -146,6 +137,7 @@ public class CourierResourceIntTest {
 
     @Before
     public void initTest() {
+        courierSearchRepository.deleteAll();
         courier = createEntity(em);
     }
 
@@ -166,6 +158,7 @@ public class CourierResourceIntTest {
         assertThat(courierList).hasSize(databaseSizeBeforeCreate + 1);
         Courier testCourier = courierList.get(courierList.size() - 1);
         assertThat(testCourier.getName()).isEqualTo(DEFAULT_NAME);
+        assertThat(testCourier.getShortCode()).isEqualTo(DEFAULT_SHORT_CODE);
         assertThat(testCourier.isActive()).isEqualTo(DEFAULT_ACTIVE);
         assertThat(testCourier.getTrackingParameter()).isEqualTo(DEFAULT_TRACKING_PARAMETER);
         assertThat(testCourier.getTrackingUrl()).isEqualTo(DEFAULT_TRACKING_URL);
@@ -175,7 +168,8 @@ public class CourierResourceIntTest {
         assertThat(testCourier.isReversePickup()).isEqualTo(DEFAULT_REVERSE_PICKUP);
 
         // Validate the Courier in Elasticsearch
-        verify(mockCourierSearchRepository, times(1)).save(testCourier);
+        Courier courierEs = courierSearchRepository.findById(testCourier.getId()).get();
+        assertThat(courierEs).isEqualToIgnoringGivenFields(testCourier);
     }
 
     @Test
@@ -196,9 +190,6 @@ public class CourierResourceIntTest {
         // Validate the Courier in the database
         List<Courier> courierList = courierRepository.findAll();
         assertThat(courierList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Courier in Elasticsearch
-        verify(mockCourierSearchRepository, times(0)).save(courier);
     }
 
     @Test
@@ -207,6 +198,25 @@ public class CourierResourceIntTest {
         int databaseSizeBeforeTest = courierRepository.findAll().size();
         // set the field null
         courier.setName(null);
+
+        // Create the Courier, which fails.
+        CourierDTO courierDTO = courierMapper.toDto(courier);
+
+        restCourierMockMvc.perform(post("/api/couriers")
+            .contentType(TestUtil.APPLICATION_JSON_UTF8)
+            .content(TestUtil.convertObjectToJsonBytes(courierDTO)))
+            .andExpect(status().isBadRequest());
+
+        List<Courier> courierList = courierRepository.findAll();
+        assertThat(courierList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void checkShortCodeIsRequired() throws Exception {
+        int databaseSizeBeforeTest = courierRepository.findAll().size();
+        // set the field null
+        courier.setShortCode(null);
 
         // Create the Courier, which fails.
         CourierDTO courierDTO = courierMapper.toDto(courier);
@@ -251,6 +261,7 @@ public class CourierResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(courier.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].shortCode").value(hasItem(DEFAULT_SHORT_CODE.toString())))
             .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
             .andExpect(jsonPath("$.[*].trackingParameter").value(hasItem(DEFAULT_TRACKING_PARAMETER.toString())))
             .andExpect(jsonPath("$.[*].trackingUrl").value(hasItem(DEFAULT_TRACKING_URL.toString())))
@@ -259,7 +270,6 @@ public class CourierResourceIntTest {
             .andExpect(jsonPath("$.[*].vendorShipping").value(hasItem(DEFAULT_VENDOR_SHIPPING.booleanValue())))
             .andExpect(jsonPath("$.[*].reversePickup").value(hasItem(DEFAULT_REVERSE_PICKUP.booleanValue())));
     }
-    
 
     @Test
     @Transactional
@@ -273,6 +283,7 @@ public class CourierResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(courier.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
+            .andExpect(jsonPath("$.shortCode").value(DEFAULT_SHORT_CODE.toString()))
             .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE.booleanValue()))
             .andExpect(jsonPath("$.trackingParameter").value(DEFAULT_TRACKING_PARAMETER.toString()))
             .andExpect(jsonPath("$.trackingUrl").value(DEFAULT_TRACKING_URL.toString()))
@@ -319,6 +330,45 @@ public class CourierResourceIntTest {
 
         // Get all the courierList where name is null
         defaultCourierShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByShortCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where shortCode equals to DEFAULT_SHORT_CODE
+        defaultCourierShouldBeFound("shortCode.equals=" + DEFAULT_SHORT_CODE);
+
+        // Get all the courierList where shortCode equals to UPDATED_SHORT_CODE
+        defaultCourierShouldNotBeFound("shortCode.equals=" + UPDATED_SHORT_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByShortCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where shortCode in DEFAULT_SHORT_CODE or UPDATED_SHORT_CODE
+        defaultCourierShouldBeFound("shortCode.in=" + DEFAULT_SHORT_CODE + "," + UPDATED_SHORT_CODE);
+
+        // Get all the courierList where shortCode equals to UPDATED_SHORT_CODE
+        defaultCourierShouldNotBeFound("shortCode.in=" + UPDATED_SHORT_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByShortCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where shortCode is not null
+        defaultCourierShouldBeFound("shortCode.specified=true");
+
+        // Get all the courierList where shortCode is null
+        defaultCourierShouldNotBeFound("shortCode.specified=false");
     }
 
     @Test
@@ -647,7 +697,7 @@ public class CourierResourceIntTest {
         CourierChannel courierChannel = CourierChannelResourceIntTest.createEntity(em);
         em.persist(courierChannel);
         em.flush();
-        courier.setCourierChannel(courierChannel);
+        courier.addCourierChannel(courierChannel);
         courierRepository.saveAndFlush(courier);
         Long courierChannelId = courierChannel.getId();
 
@@ -667,6 +717,7 @@ public class CourierResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(courier.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].shortCode").value(hasItem(DEFAULT_SHORT_CODE.toString())))
             .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
             .andExpect(jsonPath("$.[*].trackingParameter").value(hasItem(DEFAULT_TRACKING_PARAMETER.toString())))
             .andExpect(jsonPath("$.[*].trackingUrl").value(hasItem(DEFAULT_TRACKING_URL.toString())))
@@ -687,6 +738,7 @@ public class CourierResourceIntTest {
             .andExpect(jsonPath("$").isEmpty());
     }
 
+
     @Test
     @Transactional
     public void getNonExistingCourier() throws Exception {
@@ -700,7 +752,7 @@ public class CourierResourceIntTest {
     public void updateCourier() throws Exception {
         // Initialize the database
         courierRepository.saveAndFlush(courier);
-
+        courierSearchRepository.save(courier);
         int databaseSizeBeforeUpdate = courierRepository.findAll().size();
 
         // Update the courier
@@ -709,6 +761,7 @@ public class CourierResourceIntTest {
         em.detach(updatedCourier);
         updatedCourier
             .name(UPDATED_NAME)
+            .shortCode(UPDATED_SHORT_CODE)
             .active(UPDATED_ACTIVE)
             .trackingParameter(UPDATED_TRACKING_PARAMETER)
             .trackingUrl(UPDATED_TRACKING_URL)
@@ -728,6 +781,7 @@ public class CourierResourceIntTest {
         assertThat(courierList).hasSize(databaseSizeBeforeUpdate);
         Courier testCourier = courierList.get(courierList.size() - 1);
         assertThat(testCourier.getName()).isEqualTo(UPDATED_NAME);
+        assertThat(testCourier.getShortCode()).isEqualTo(UPDATED_SHORT_CODE);
         assertThat(testCourier.isActive()).isEqualTo(UPDATED_ACTIVE);
         assertThat(testCourier.getTrackingParameter()).isEqualTo(UPDATED_TRACKING_PARAMETER);
         assertThat(testCourier.getTrackingUrl()).isEqualTo(UPDATED_TRACKING_URL);
@@ -737,7 +791,8 @@ public class CourierResourceIntTest {
         assertThat(testCourier.isReversePickup()).isEqualTo(UPDATED_REVERSE_PICKUP);
 
         // Validate the Courier in Elasticsearch
-        verify(mockCourierSearchRepository, times(1)).save(testCourier);
+        Courier courierEs = courierSearchRepository.findById(testCourier.getId()).get();
+        assertThat(courierEs).isEqualToIgnoringGivenFields(testCourier);
     }
 
     @Test
@@ -752,14 +807,11 @@ public class CourierResourceIntTest {
         restCourierMockMvc.perform(put("/api/couriers")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(courierDTO)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isCreated());
 
         // Validate the Courier in the database
         List<Courier> courierList = courierRepository.findAll();
-        assertThat(courierList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Courier in Elasticsearch
-        verify(mockCourierSearchRepository, times(0)).save(courier);
+        assertThat(courierList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
@@ -767,7 +819,7 @@ public class CourierResourceIntTest {
     public void deleteCourier() throws Exception {
         // Initialize the database
         courierRepository.saveAndFlush(courier);
-
+        courierSearchRepository.save(courier);
         int databaseSizeBeforeDelete = courierRepository.findAll().size();
 
         // Get the courier
@@ -775,12 +827,13 @@ public class CourierResourceIntTest {
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
+        // Validate Elasticsearch is empty
+        boolean courierExistsInEs = courierSearchRepository.existsById(courier.getId());
+        assertThat(courierExistsInEs).isFalse();
+
         // Validate the database is empty
         List<Courier> courierList = courierRepository.findAll();
         assertThat(courierList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Courier in Elasticsearch
-        verify(mockCourierSearchRepository, times(1)).deleteById(courier.getId());
     }
 
     @Test
@@ -788,14 +841,15 @@ public class CourierResourceIntTest {
     public void searchCourier() throws Exception {
         // Initialize the database
         courierRepository.saveAndFlush(courier);
-        when(mockCourierSearchRepository.search(queryStringQuery("id:" + courier.getId()), PageRequest.of(0, 20)))
-            .thenReturn(new PageImpl<>(Collections.singletonList(courier), PageRequest.of(0, 1), 1));
+        courierSearchRepository.save(courier);
+
         // Search the courier
         restCourierMockMvc.perform(get("/api/_search/couriers?query=id:" + courier.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(courier.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].shortCode").value(hasItem(DEFAULT_SHORT_CODE.toString())))
             .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
             .andExpect(jsonPath("$.[*].trackingParameter").value(hasItem(DEFAULT_TRACKING_PARAMETER.toString())))
             .andExpect(jsonPath("$.[*].trackingUrl").value(hasItem(DEFAULT_TRACKING_URL.toString())))

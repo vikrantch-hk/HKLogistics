@@ -76,7 +76,7 @@ public class CourierChannelResource {
     public ResponseEntity<CourierChannelDTO> updateCourierChannel(@RequestBody CourierChannelDTO courierChannelDTO) throws URISyntaxException {
         log.debug("REST request to update CourierChannel : {}", courierChannelDTO);
         if (courierChannelDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            return createCourierChannel(courierChannelDTO);
         }
         CourierChannelDTO result = courierChannelService.save(courierChannelDTO);
         return ResponseEntity.ok()
@@ -108,8 +108,8 @@ public class CourierChannelResource {
     @Timed
     public ResponseEntity<CourierChannelDTO> getCourierChannel(@PathVariable Long id) {
         log.debug("REST request to get CourierChannel : {}", id);
-        Optional<CourierChannelDTO> courierChannelDTO = courierChannelService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(courierChannelDTO);
+        CourierChannelDTO courierChannelDTO = courierChannelService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(courierChannelDTO));
     }
 
     /**
