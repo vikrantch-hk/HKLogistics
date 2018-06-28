@@ -55,15 +55,11 @@ public class Courier implements Serializable {
     private Boolean reversePickup;
 
     @OneToMany(mappedBy = "courier")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @JsonIgnore
     private Set<CourierChannel> courierChannels = new HashSet<>();
 
-    @ManyToMany
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @JoinTable(name = "courier_courier_group",
-               joinColumns = @JoinColumn(name = "couriers_id", referencedColumnName = "id"),
-               inverseJoinColumns = @JoinColumn(name = "courier_groups_id", referencedColumnName = "id"))
-    private Set<CourierGroup> courierGroups = new HashSet<>();
+    @ManyToOne
+    private CourierGroup courierGroup;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -203,29 +199,17 @@ public class Courier implements Serializable {
         this.courierChannels = courierChannels;
     }
 
-    public Set<CourierGroup> getCourierGroups() {
-        return courierGroups;
+    public CourierGroup getCourierGroup() {
+        return courierGroup;
     }
 
-    public Courier courierGroups(Set<CourierGroup> courierGroups) {
-        this.courierGroups = courierGroups;
+    public Courier courierGroup(CourierGroup courierGroup) {
+        this.courierGroup = courierGroup;
         return this;
     }
 
-    public Courier addCourierGroup(CourierGroup courierGroup) {
-        this.courierGroups.add(courierGroup);
-        courierGroup.getCouriers().add(this);
-        return this;
-    }
-
-    public Courier removeCourierGroup(CourierGroup courierGroup) {
-        this.courierGroups.remove(courierGroup);
-        courierGroup.getCouriers().remove(this);
-        return this;
-    }
-
-    public void setCourierGroups(Set<CourierGroup> courierGroups) {
-        this.courierGroups = courierGroups;
+    public void setCourierGroup(CourierGroup courierGroup) {
+        this.courierGroup = courierGroup;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

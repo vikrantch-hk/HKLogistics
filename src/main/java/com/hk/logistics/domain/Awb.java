@@ -53,6 +53,9 @@ public class Awb implements Serializable {
     @Column(name = "is_bright_awb", nullable = false)
     private Boolean isBrightAwb;
 
+    @Column(name = "tracking_link")
+    private String trackingLink;
+    
     @ManyToOne
     @JsonIgnoreProperties("")
     private Courier courier;
@@ -152,6 +155,19 @@ public class Awb implements Serializable {
         this.returnAwbBarCode = returnAwbBarCode;
     }
 
+    public String getTrackingLink() {
+        return trackingLink;
+    }
+
+    public Awb trackingLink(String trackingLink) {
+        this.trackingLink = trackingLink;
+        return this;
+    }
+
+    public void setTrackingLink(String trackingLink) {
+        this.trackingLink = trackingLink;
+    }
+    
     public Boolean isIsBrightAwb() {
         return isBrightAwb;
     }

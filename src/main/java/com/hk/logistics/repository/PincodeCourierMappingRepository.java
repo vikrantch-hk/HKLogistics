@@ -1,8 +1,14 @@
 package com.hk.logistics.repository;
 
-import com.hk.logistics.domain.PincodeCourierMapping;
-import org.springframework.data.jpa.repository.*;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
+
+import com.hk.logistics.domain.PincodeCourierMapping;
+import com.hk.logistics.domain.SourceDestinationMapping;
+import com.hk.logistics.domain.VendorWHCourierMapping;
 
 
 /**
@@ -10,6 +16,11 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PincodeCourierMappingRepository extends JpaRepository<PincodeCourierMapping, Long> {
+public interface PincodeCourierMappingRepository extends JpaRepository<PincodeCourierMapping, Long>,JpaSpecificationExecutor<PincodeCourierMapping> {
 
+	List<PincodeCourierMapping> findBySourceDestinationMappingInAndVendorWHCourierMappingIn(List<SourceDestinationMapping> sourceDestinationMapping,
+			List<VendorWHCourierMapping> vendorWHCourierMapping);
+	
+	List<PincodeCourierMapping> findBySourceDestinationMappingAndVendorWHCourierMappingIn(List<SourceDestinationMapping> sourceDestinationMapping,
+			List<VendorWHCourierMapping> vendorWHCourierMapping);
 }

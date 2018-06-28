@@ -12,4 +12,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, Long> {
 
+	ProductVariant findByVariantIdAndPincode(String variantId,String Pincode);
 }
