@@ -11,6 +11,7 @@ import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -140,5 +141,12 @@ public class AwbResource {
         log.debug("REST request to search Awbs for query {}", query);
         return awbService.search(query);
     }
-
+    
+    
+    @GetMapping("/awbs/download")
+    public ResponseEntity<Void> handleForexRequest(AwbCriteria criteria, Model model) {
+        model.addAttribute("Awb", awbQueryService.findByCriteria(criteria));
+        //return "awbExcelView";
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, "")).build();
+    }
 }

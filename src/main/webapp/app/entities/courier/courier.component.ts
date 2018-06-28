@@ -228,7 +228,7 @@ export class CourierComponent implements OnInit, OnDestroy {
     filter(filterOptions: String[]) {
         console.log('controller filter');
         this.page = 0;
-        if (filterOptions[2] !== '' && !filterOptions[2].toString().startsWith('courierGroupId') ) {
+        if (filterOptions[2] && filterOptions[2] !== '' && !filterOptions[2].toString().startsWith('courierGroupId') ) {
             filterOptions[2] = 'courierGroupId:' + filterOptions[2];
         }
         this.router.navigate([

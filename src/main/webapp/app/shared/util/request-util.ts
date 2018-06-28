@@ -5,7 +5,7 @@ export const createRequestOption = (req?: any): HttpParams => {
     console.log('createRequestOption');
     if (req) {
             Object.keys(req).forEach(key => {
-                if (key !== 'sort' && key !== 'courierCriteria') {
+                if (key !== 'sort' && key !== 'courierCriteria' && key !== 'awbCriteria') {
                     options = options.set(key, req[key]);
                 }
             });
@@ -24,11 +24,19 @@ export const createRequestOption = (req?: any): HttpParams => {
                 options = options.set(criterion.split(':')[0] + '.equals', criterion.split(':')[1]);
             }
         });
-        if (req.sort) {
-            req.sort.forEach(val => {
-                options = options.append('sort', val);
-            });
-        }
+    }
+    if (req.awbCriteria) {
+        req.awbCriteria.forEach(criterion => {
+            if (criterion.startsWith('courierId') ||  criterion.startsWith('awbStatusId')) {
+                console.log('awbCriteria ' + criterion.split(':')[0] + criterion.split(':')[1]);
+                options = options.set(criterion.split(':')[0] + '.equals', criterion.split(':')[1]);
+            }
+        });
+    }
+    if (req.sort) {
+        req.sort.forEach(val => {
+            options = options.append('sort', val);
+        });
     }
 
 }

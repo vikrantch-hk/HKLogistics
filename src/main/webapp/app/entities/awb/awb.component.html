@@ -24,6 +24,24 @@
             </form>
         </div>
     </div>
+    <div class="col-sm-12">Courier Group
+        <select [(ngModel)]="filterOptions[0]">
+            <option [ngValue]="null"></option>
+            <option [ngValue]="courierOption.id" *ngFor="let courierOption of couriers; trackBy: trackCourierById">{{courierOption.name}}</option>
+        </select>
+    </div>
+    <div class="col-sm-12">Awb Status
+        <select [(ngModel)]="filterOptions[1]">
+            <option [ngValue]="null"></option>
+            <option [ngValue]="awbStatusOption.id" *ngFor="let awbStatusOption of awbstatuses; trackBy: trackAwbStatusById">{{awbStatusOption.status}}</option>
+        </select>
+    </div>
+    <button class="input-group-append btn btn-info" (click)="filter(filterOptions)">
+            <fa-icon [icon]="'search'"></fa-icon>
+        </button>
+        <button class="input-group-append btn btn-danger" (click)="clearFilter()" *ngIf="filterOptions">
+            <fa-icon [icon]="'trash-alt'"></fa-icon>
+        </button>
     <br/>
     <div class="table-responsive" *ngIf="awbs">
         <table class="table table-striped">

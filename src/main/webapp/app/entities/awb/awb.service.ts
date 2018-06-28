@@ -74,4 +74,10 @@ export class AwbService {
         });
         return res;
     }
+
+    filter(req?: any): Observable<HttpResponse<any> {
+        console.log('req.filter');
+        const options = createRequestOption(req);
+        return this.http.get<any>(this.resourceUrl + '/download' , { params: options, observe: 'response' });
+    }
 }

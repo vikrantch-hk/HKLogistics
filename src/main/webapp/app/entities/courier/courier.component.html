@@ -42,7 +42,7 @@
         <div class="col-sm-12">Courier Group
                 <select [(ngModel)]="filterOptions[2]">
                     <option [ngValue]="null"></option>
-                    <option [ngValue]="courierGroupOption.id" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById" ng-selected="filterOptions[2]">{{courierGroupOption.name}}</option>
+                    <option [ngValue]="courierGroupOption.id" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById">{{courierGroupOption.name}}</option>
                 </select>
         </div>
         <button class="input-group-append btn btn-info" (click)="filter(filterOptions)">
