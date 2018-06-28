@@ -16,8 +16,8 @@ public interface CourierChannelMapper extends EntityMapper<CourierChannelDTO, Co
     CourierChannelDTO toDto(CourierChannel courierChannel);
 
     @Mapping(target = "vendorWHCourierMappings", ignore = true)
-    @Mapping(target = "couriers", ignore = true)
     @Mapping(source = "channelId", target = "channel")
+    @Mapping(target = "couriers", ignore = true)
     CourierChannel toEntity(CourierChannelDTO courierChannelDTO);
 
     default CourierChannel fromId(Long id) {

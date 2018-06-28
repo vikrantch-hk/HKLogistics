@@ -8,9 +8,9 @@ export interface ICourier {
     hkShipping?: boolean;
     vendorShipping?: boolean;
     reversePickup?: boolean;
-    courierChannelId?: number;
     courierGroupName?: string;
     courierGroupId?: number;
+    courierChannelId?: number;
 }
 
 export class Courier implements ICourier {
@@ -24,9 +24,9 @@ export class Courier implements ICourier {
         public hkShipping?: boolean,
         public vendorShipping?: boolean,
         public reversePickup?: boolean,
-        public courierChannelId?: number,
         public courierGroupName?: string,
-        public courierGroupId?: number
+        public courierGroupId?: number,
+        public courierChannelId?: number
     ) {
         this.active = false;
         this.hkShipping = false;

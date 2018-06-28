@@ -9,6 +9,10 @@ import { Principal } from 'app/core';
 
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { CourierService } from './courier.service';
+import { ICourierGroup } from 'app/shared/model/courier-group.model';
+import { CourierGroupService } from 'app/entities/courier-group';
+import { ICourierChannel } from 'app/shared/model/courier-channel.model';
+import { CourierChannelService } from 'app/entities/courier-channel';
 
 @Component({
     selector: 'jhi-courier',
@@ -30,9 +34,13 @@ export class CourierComponent implements OnInit, OnDestroy {
     predicate: any;
     previousPage: any;
     reverse: any;
+    filterOptions: String[];
+    couriergroups: ICourierGroup[];
+    courierchannels: ICourierChannel[];
 
     constructor(
         private courierService: CourierService,
+        private courierGroupService: CourierGroupService,
         private parseLinks: JhiParseLinks,
         private jhiAlertService: JhiAlertService,
         private principal: Principal,
@@ -51,6 +59,10 @@ export class CourierComponent implements OnInit, OnDestroy {
             this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
                 ? this.activatedRoute.snapshot.params['search']
                 : '';
+        this.filterOptions =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['courierCriteria']
+                ? this.activatedRoute.snapshot.params['courierCriteria'].split(',')
+                : [];
     }
 
     loadAll() {
@@ -78,6 +90,21 @@ export class CourierComponent implements OnInit, OnDestroy {
                 (res: HttpResponse<ICourier[]>) => this.paginateCouriers(res.body, res.headers),
                 (res: HttpErrorResponse) => this.onError(res.message)
             );
+        if (this.filterOptions) {
+            this.courierService
+                .filter({
+                    page: this.page - 1,
+                    size: this.itemsPerPage,
+                    sort: this.sort(),
+                    courierCriteria : this.filterOptions
+                })
+                .subscribe(
+                    (res: HttpResponse<ICourier[]>) => this.paginateCouriers(res.body, res.headers),
+                    (res: HttpErrorResponse) => this.onError(res.message)
+                );
+            console.log('hii');
+            return;
+        }
     }
 
     loadPage(page: number) {
@@ -96,12 +123,36 @@ export class CourierComponent implements OnInit, OnDestroy {
                 sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
             }
         });
+        this.router.navigate(['/courier'], {
+            queryParams: {
+                page: this.page,
+                size: this.itemsPerPage,
+                courierCriteria: this.filterOptions,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        });
         this.loadAll();
     }
 
     clear() {
         this.page = 0;
         this.currentSearch = '';
+        this.router.navigate([
+            '/courier',
+            {
+                page: this.page,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        ]);
+        this.loadAll();
+    }
+
+    clearFilter() {
+        this.page = 0;
+        this.filterOptions = [];
+        this.filterOptions[0] = '';
+        this.filterOptions[1] = '';
+        this.filterOptions[2] = '';
         this.router.navigate([
             '/courier',
             {
@@ -135,6 +186,12 @@ export class CourierComponent implements OnInit, OnDestroy {
             this.currentAccount = account;
         });
         this.registerChangeInCouriers();
+        this.courierGroupService.query().subscribe(
+            (res: HttpResponse<ICourierGroup[]>) => {
+                this.couriergroups = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     ngOnDestroy() {
@@ -167,4 +224,27 @@ export class CourierComponent implements OnInit, OnDestroy {
     private onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
     }
+
+    filter(filterOptions: String[]) {
+        console.log('controller filter');
+        this.page = 0;
+        if (filterOptions[2] !== '' && !filterOptions[2].toString().startsWith('courierGroupId') ) {
+            filterOptions[2] = 'courierGroupId:' + filterOptions[2];
+        }
+        this.router.navigate([
+            '/courier',
+            {
+                    page: this.page,
+                    size: this.itemsPerPage,
+                    sort: this.sort(),
+                    courierCriteria: this.filterOptions
+                    }]);
+        console.log('couriers');
+        this.loadAll();
+    }
+
+    trackCourierGroupById(index: number, item: ICourierGroup) {
+        return item.id;
+    }
+
 }

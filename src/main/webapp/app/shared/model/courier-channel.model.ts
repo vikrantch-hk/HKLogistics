@@ -7,9 +7,9 @@ export interface ICourierChannel {
     maxWeight?: number;
     natureOfProduct?: string;
     vendorWHCourierMappings?: IVendorWHCourierMapping[];
-    couriers?: ICourier[];
     channelName?: string;
     channelId?: number;
+    couriers?: ICourier[];
 }
 
 export class CourierChannel implements ICourierChannel {
@@ -19,8 +19,8 @@ export class CourierChannel implements ICourierChannel {
         public maxWeight?: number,
         public natureOfProduct?: string,
         public vendorWHCourierMappings?: IVendorWHCourierMapping[],
-        public couriers?: ICourier[],
         public channelName?: string,
-        public channelId?: number
+        public channelId?: number,
+        public couriers?: ICourier[]
     ) {}
 }

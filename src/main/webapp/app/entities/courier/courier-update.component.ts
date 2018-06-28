@@ -6,10 +6,10 @@ import { JhiAlertService } from 'ng-jhipster';
 
 import { ICourier } from 'app/shared/model/courier.model';
 import { CourierService } from './courier.service';
-import { ICourierChannel } from 'app/shared/model/courier-channel.model';
-import { CourierChannelService } from 'app/entities/courier-channel';
 import { ICourierGroup } from 'app/shared/model/courier-group.model';
 import { CourierGroupService } from 'app/entities/courier-group';
+import { ICourierChannel } from 'app/shared/model/courier-channel.model';
+import { CourierChannelService } from 'app/entities/courier-channel';
 
 @Component({
     selector: 'jhi-courier-update',
@@ -19,15 +19,15 @@ export class CourierUpdateComponent implements OnInit {
     private _courier: ICourier;
     isSaving: boolean;
 
-    courierchannels: ICourierChannel[];
-
     couriergroups: ICourierGroup[];
+
+    courierchannels: ICourierChannel[];
 
     constructor(
         private jhiAlertService: JhiAlertService,
         private courierService: CourierService,
-        private courierChannelService: CourierChannelService,
         private courierGroupService: CourierGroupService,
+        private courierChannelService: CourierChannelService,
         private activatedRoute: ActivatedRoute
     ) {}
 
@@ -36,18 +36,19 @@ export class CourierUpdateComponent implements OnInit {
         this.activatedRoute.data.subscribe(({ courier }) => {
             this.courier = courier;
         });
-        this.courierChannelService.query().subscribe(
-            (res: HttpResponse<ICourierChannel[]>) => {
-                this.courierchannels = res.body;
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-        );
         this.courierGroupService.query().subscribe(
             (res: HttpResponse<ICourierGroup[]>) => {
                 this.couriergroups = res.body;
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
+        this.courierChannelService.query().subscribe(
+            (res: HttpResponse<ICourierChannel[]>) => {
+                this.courierchannels = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
+        console.log('courierchannels');
     }
 
     previousState() {
@@ -80,11 +81,11 @@ export class CourierUpdateComponent implements OnInit {
         this.jhiAlertService.error(errorMessage, null, null);
     }
 
-    trackCourierChannelById(index: number, item: ICourierChannel) {
+    trackCourierGroupById(index: number, item: ICourierGroup) {
         return item.id;
     }
 
-    trackCourierGroupById(index: number, item: ICourierGroup) {
+    trackCourierChannelById(index: number, item: ICourierChannel) {
         return item.id;
     }
     get courier() {

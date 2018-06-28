@@ -17,6 +17,7 @@ export class CourierService {
     constructor(private http: HttpClient) {}
 
     create(courier: ICourier): Observable<EntityResponseType> {
+        console.log('courier create');
         return this.http.post<ICourier>(this.resourceUrl, courier, { observe: 'response' });
     }
 
@@ -40,5 +41,11 @@ export class CourierService {
     search(req?: any): Observable<EntityArrayResponseType> {
         const options = createRequestOption(req);
         return this.http.get<ICourier[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
+    }
+
+    filter(req?: any): Observable<EntityArrayResponseType> {
+        console.log('req.filter');
+        const options = createRequestOption(req);
+        return this.http.get<ICourier[]>(this.resourceUrl, { params: options, observe: 'response' });
     }
 }

@@ -41,13 +41,13 @@ public class CourierChannel implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<VendorWHCourierMapping> vendorWHCourierMappings = new HashSet<>();
 
+    @ManyToOne(fetch=FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @JsonIgnoreProperties("courierChannels")
+    private Channel channel;
+
     @OneToMany(mappedBy = "courierChannel")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Courier> couriers = new HashSet<>();
-
-    @ManyToOne
-    @JsonIgnoreProperties("courierChannels")
-    private Channel channel;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -122,6 +122,19 @@ public class CourierChannel implements Serializable {
         this.vendorWHCourierMappings = vendorWHCourierMappings;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public CourierChannel channel(Channel channel) {
+        this.channel = channel;
+        return this;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
     public Set<Courier> getCouriers() {
         return couriers;
     }
@@ -145,19 +158,6 @@ public class CourierChannel implements Serializable {
 
     public void setCouriers(Set<Courier> couriers) {
         this.couriers = couriers;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public CourierChannel channel(Channel channel) {
-        this.channel = channel;
-        return this;
-    }
-
-    public void setChannel(Channel channel) {
-        this.channel = channel;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

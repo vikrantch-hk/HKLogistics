@@ -42,16 +42,16 @@
     ],
     "relationships": [
         {
-            "relationshipName": "courierChannel",
-            "otherEntityName": "courierChannel",
-            "relationshipType": "many-to-one",
-            "otherEntityField": "id"
-        },
-        {
             "relationshipType": "many-to-one",
             "relationshipName": "courierGroup",
             "otherEntityName": "courierGroup",
             "otherEntityField": "name"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "courierChannel",
+            "otherEntityName": "courierChannel",
+            "otherEntityField": "id"
         }
     ],
     "changelogDate": "20180620165218",

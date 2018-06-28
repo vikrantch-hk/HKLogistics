@@ -44,9 +44,9 @@ public class CourierCriteria implements Serializable {
 
     private BooleanFilter reversePickup;
 
-    private LongFilter courierChannelId;
-
     private LongFilter courierGroupId;
+
+    private LongFilter courierChannelId;
 
     public CourierCriteria() {
     }
@@ -123,20 +123,20 @@ public class CourierCriteria implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public LongFilter getCourierChannelId() {
-        return courierChannelId;
-    }
-
-    public void setCourierChannelId(LongFilter courierChannelId) {
-        this.courierChannelId = courierChannelId;
-    }
-
     public LongFilter getCourierGroupId() {
         return courierGroupId;
     }
 
     public void setCourierGroupId(LongFilter courierGroupId) {
         this.courierGroupId = courierGroupId;
+    }
+
+    public LongFilter getCourierChannelId() {
+        return courierChannelId;
+    }
+
+    public void setCourierChannelId(LongFilter courierChannelId) {
+        this.courierChannelId = courierChannelId;
     }
 
     @Override
@@ -151,8 +151,8 @@ public class CourierCriteria implements Serializable {
                 (hkShipping != null ? "hkShipping=" + hkShipping + ", " : "") +
                 (vendorShipping != null ? "vendorShipping=" + vendorShipping + ", " : "") +
                 (reversePickup != null ? "reversePickup=" + reversePickup + ", " : "") +
-                (courierChannelId != null ? "courierChannelId=" + courierChannelId + ", " : "") +
                 (courierGroupId != null ? "courierGroupId=" + courierGroupId + ", " : "") +
+                (courierChannelId != null ? "courierChannelId=" + courierChannelId + ", " : "") +
             "}";
     }
 

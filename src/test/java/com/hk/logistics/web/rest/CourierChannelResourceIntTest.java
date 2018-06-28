@@ -4,8 +4,8 @@ import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.domain.VendorWHCourierMapping;
-import com.hk.logistics.domain.Courier;
 import com.hk.logistics.domain.Channel;
+import com.hk.logistics.domain.Courier;
 import com.hk.logistics.repository.CourierChannelRepository;
 import com.hk.logistics.repository.search.CourierChannelSearchRepository;
 import com.hk.logistics.service.CourierChannelService;
@@ -346,25 +346,6 @@ public class CourierChannelResourceIntTest {
 
     @Test
     @Transactional
-    public void getAllCourierChannelsByCourierIsEqualToSomething() throws Exception {
-        // Initialize the database
-        Courier courier = CourierResourceIntTest.createEntity(em);
-        em.persist(courier);
-        em.flush();
-        courierChannel.addCourier(courier);
-        courierChannelRepository.saveAndFlush(courierChannel);
-        Long courierId = courier.getId();
-
-        // Get all the courierChannelList where courier equals to courierId
-        defaultCourierChannelShouldBeFound("courierId.equals=" + courierId);
-
-        // Get all the courierChannelList where courier equals to courierId + 1
-        defaultCourierChannelShouldNotBeFound("courierId.equals=" + (courierId + 1));
-    }
-
-
-    @Test
-    @Transactional
     public void getAllCourierChannelsByChannelIsEqualToSomething() throws Exception {
         // Initialize the database
         Channel channel = ChannelResourceIntTest.createEntity(em);
@@ -379,6 +360,25 @@ public class CourierChannelResourceIntTest {
 
         // Get all the courierChannelList where channel equals to channelId + 1
         defaultCourierChannelShouldNotBeFound("channelId.equals=" + (channelId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCourierChannelsByCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Courier courier = CourierResourceIntTest.createEntity(em);
+        em.persist(courier);
+        em.flush();
+        courierChannel.addCourier(courier);
+        courierChannelRepository.saveAndFlush(courierChannel);
+        Long courierId = courier.getId();
+
+        // Get all the courierChannelList where courier equals to courierId
+        defaultCourierChannelShouldBeFound("courierId.equals=" + courierId);
+
+        // Get all the courierChannelList where courier equals to courierId + 1
+        defaultCourierChannelShouldNotBeFound("courierId.equals=" + (courierId + 1));
     }
 
     /**

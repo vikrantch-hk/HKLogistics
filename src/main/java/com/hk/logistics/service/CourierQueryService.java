@@ -104,11 +104,11 @@ public class CourierQueryService extends QueryService<Courier> {
             if (criteria.getReversePickup() != null) {
                 specification = specification.and(buildSpecification(criteria.getReversePickup(), Courier_.reversePickup));
             }
-            if (criteria.getCourierChannelId() != null) {
-                specification = specification.and(buildReferringEntitySpecification(criteria.getCourierChannelId(), Courier_.courierChannel, CourierChannel_.id));
-            }
             if (criteria.getCourierGroupId() != null) {
                 specification = specification.and(buildReferringEntitySpecification(criteria.getCourierGroupId(), Courier_.courierGroup, CourierGroup_.id));
+            }
+            if (criteria.getCourierChannelId() != null) {
+                specification = specification.and(buildReferringEntitySpecification(criteria.getCourierChannelId(), Courier_.courierChannel, CourierChannel_.id));
             }
         }
         return specification;

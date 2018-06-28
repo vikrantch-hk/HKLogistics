@@ -127,8 +127,7 @@ entity PincodeRegionZone {
 relationship OneToMany {
   //new relationship
 	CourierChannel{vendorWHCourierMapping} to VendorWHCourierMapping{courierChannel},
-	Channel{courierChannel} to CourierChannel{channel(name)},
-	CourierChannel{courier(name)} to Courier
+	Channel{courierChannel} to CourierChannel{channel(name)}
 }
 
 relationship ManyToOne {
@@ -148,7 +147,8 @@ relationship ManyToOne {
     Awb{courier(name)} to Courier,
     Awb{vendorWHCourierMapping} to VendorWHCourierMapping,
     Awb{awbStatus(status)} to AwbStatus,
-	Courier{courierGroup(name)} to CourierGroup{courier(name)}
+	Courier{courierGroup(name)} to CourierGroup{courier(name)},
+	Courier{courierChannel} to CourierChannel{courier(name)}
 }
 
 // Set pagination options

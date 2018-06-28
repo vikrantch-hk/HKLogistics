@@ -54,11 +54,11 @@ public class Courier implements Serializable {
 
     @ManyToOne
     @JsonIgnoreProperties("couriers")
-    private CourierChannel courierChannel;
-
-    @ManyToOne
-    @JsonIgnoreProperties("couriers")
     private CourierGroup courierGroup;
+
+    @ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.REMOVE)
+    @JsonIgnoreProperties("couriers")
+    private CourierChannel courierChannel;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -173,19 +173,6 @@ public class Courier implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public CourierChannel getCourierChannel() {
-        return courierChannel;
-    }
-
-    public Courier courierChannel(CourierChannel courierChannel) {
-        this.courierChannel = courierChannel;
-        return this;
-    }
-
-    public void setCourierChannel(CourierChannel courierChannel) {
-        this.courierChannel = courierChannel;
-    }
-
     public CourierGroup getCourierGroup() {
         return courierGroup;
     }
@@ -197,6 +184,19 @@ public class Courier implements Serializable {
 
     public void setCourierGroup(CourierGroup courierGroup) {
         this.courierGroup = courierGroup;
+    }
+
+    public CourierChannel getCourierChannel() {
+        return courierChannel;
+    }
+
+    public Courier courierChannel(CourierChannel courierChannel) {
+        this.courierChannel = courierChannel;
+        return this;
+    }
+
+    public void setCourierChannel(CourierChannel courierChannel) {
+        this.courierChannel = courierChannel;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

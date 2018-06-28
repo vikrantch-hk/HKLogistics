@@ -29,12 +29,14 @@ public class CourierDTO implements Serializable {
 
     private Boolean reversePickup;
 
-    private Long courierChannelId;
-
     private Long courierGroupId;
 
     private String courierGroupName;
 
+    private Long courierChannelId;
+
+    private String courierChannelName;
+    
     public Long getId() {
         return id;
     }
@@ -107,14 +109,6 @@ public class CourierDTO implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public Long getCourierChannelId() {
-        return courierChannelId;
-    }
-
-    public void setCourierChannelId(Long courierChannelId) {
-        this.courierChannelId = courierChannelId;
-    }
-
     public Long getCourierGroupId() {
         return courierGroupId;
     }
@@ -131,7 +125,23 @@ public class CourierDTO implements Serializable {
         this.courierGroupName = courierGroupName;
     }
 
-    @Override
+    public Long getCourierChannelId() {
+        return courierChannelId;
+    }
+
+    public void setCourierChannelId(Long courierChannelId) {
+        this.courierChannelId = courierChannelId;
+    }
+
+    public String getCourierChannelName() {
+		return courierChannelName;
+	}
+
+	public void setCourierChannelName(String courierChannelName) {
+		this.courierChannelName = courierChannelName;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -164,9 +174,9 @@ public class CourierDTO implements Serializable {
             ", hkShipping='" + isHkShipping() + "'" +
             ", vendorShipping='" + isVendorShipping() + "'" +
             ", reversePickup='" + isReversePickup() + "'" +
-            ", courierChannel=" + getCourierChannelId() +
             ", courierGroup=" + getCourierGroupId() +
             ", courierGroup='" + getCourierGroupName() + "'" +
+            ", courierChannel=" + getCourierChannelId() +
             "}";
     }
 }

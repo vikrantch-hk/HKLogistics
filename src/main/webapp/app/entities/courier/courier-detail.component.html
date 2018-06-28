@@ -37,16 +37,16 @@
                 <dd>
                     <span>{{courier.reversePickup}}</span>
                 </dd>
-                <dt><span>Courier Channel</span></dt>
-                <dd>
-                    <div *ngIf="courier.courierChannelId">
-                        <a [routerLink]="['/courier-channel', courier.courierChannelId, 'view']">{{courier.courierChannelId}}</a>
-                    </div>
-                </dd>
                 <dt><span>Courier Group</span></dt>
                 <dd>
                     <div *ngIf="courier.courierGroupId">
                         <a [routerLink]="['/courier-group', courier.courierGroupId, 'view']">{{courier.courierGroupName}}</a>
+                    </div>
+                </dd>
+                <dt><span>Courier Channel</span></dt>
+                <dd>
+                    <div *ngIf="courier.courierChannelId">
+                        <a [routerLink]="['/courier-channel', courier.courierChannelId, 'view']">{{courier.courierChannelName}}</a>
                     </div>
                 </dd>
             </dl>

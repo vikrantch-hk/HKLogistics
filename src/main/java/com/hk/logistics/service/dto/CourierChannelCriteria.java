@@ -36,9 +36,9 @@ public class CourierChannelCriteria implements Serializable {
 
     private LongFilter vendorWHCourierMappingId;
 
-    private LongFilter courierId;
-
     private LongFilter channelId;
+
+    private LongFilter courierId;
 
     public CourierChannelCriteria() {
     }
@@ -83,20 +83,20 @@ public class CourierChannelCriteria implements Serializable {
         this.vendorWHCourierMappingId = vendorWHCourierMappingId;
     }
 
-    public LongFilter getCourierId() {
-        return courierId;
-    }
-
-    public void setCourierId(LongFilter courierId) {
-        this.courierId = courierId;
-    }
-
     public LongFilter getChannelId() {
         return channelId;
     }
 
     public void setChannelId(LongFilter channelId) {
         this.channelId = channelId;
+    }
+
+    public LongFilter getCourierId() {
+        return courierId;
+    }
+
+    public void setCourierId(LongFilter courierId) {
+        this.courierId = courierId;
     }
 
     @Override
@@ -107,8 +107,8 @@ public class CourierChannelCriteria implements Serializable {
                 (maxWeight != null ? "maxWeight=" + maxWeight + ", " : "") +
                 (natureOfProduct != null ? "natureOfProduct=" + natureOfProduct + ", " : "") +
                 (vendorWHCourierMappingId != null ? "vendorWHCourierMappingId=" + vendorWHCourierMappingId + ", " : "") +
-                (courierId != null ? "courierId=" + courierId + ", " : "") +
                 (channelId != null ? "channelId=" + channelId + ", " : "") +
+                (courierId != null ? "courierId=" + courierId + ", " : "") +
             "}";
     }
 
