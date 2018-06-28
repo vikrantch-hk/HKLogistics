@@ -9,6 +9,8 @@ import com.hk.logistics.service.RegionTypeService;
 import com.hk.logistics.service.dto.RegionTypeDTO;
 import com.hk.logistics.service.mapper.RegionTypeMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.RegionTypeCriteria;
+import com.hk.logistics.service.RegionTypeQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +74,9 @@ public class RegionTypeResourceIntTest {
     private RegionTypeSearchRepository mockRegionTypeSearchRepository;
 
     @Autowired
+    private RegionTypeQueryService regionTypeQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -90,7 +95,7 @@ public class RegionTypeResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final RegionTypeResource regionTypeResource = new RegionTypeResource(regionTypeService);
+        final RegionTypeResource regionTypeResource = new RegionTypeResource(regionTypeService, regionTypeQueryService);
         this.restRegionTypeMockMvc = MockMvcBuilders.standaloneSetup(regionTypeResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -192,6 +197,134 @@ public class RegionTypeResourceIntTest {
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
             .andExpect(jsonPath("$.priority").value(DEFAULT_PRIORITY.intValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where name equals to DEFAULT_NAME
+        defaultRegionTypeShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the regionTypeList where name equals to UPDATED_NAME
+        defaultRegionTypeShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultRegionTypeShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the regionTypeList where name equals to UPDATED_NAME
+        defaultRegionTypeShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where name is not null
+        defaultRegionTypeShouldBeFound("name.specified=true");
+
+        // Get all the regionTypeList where name is null
+        defaultRegionTypeShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByPriorityIsEqualToSomething() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where priority equals to DEFAULT_PRIORITY
+        defaultRegionTypeShouldBeFound("priority.equals=" + DEFAULT_PRIORITY);
+
+        // Get all the regionTypeList where priority equals to UPDATED_PRIORITY
+        defaultRegionTypeShouldNotBeFound("priority.equals=" + UPDATED_PRIORITY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByPriorityIsInShouldWork() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where priority in DEFAULT_PRIORITY or UPDATED_PRIORITY
+        defaultRegionTypeShouldBeFound("priority.in=" + DEFAULT_PRIORITY + "," + UPDATED_PRIORITY);
+
+        // Get all the regionTypeList where priority equals to UPDATED_PRIORITY
+        defaultRegionTypeShouldNotBeFound("priority.in=" + UPDATED_PRIORITY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByPriorityIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where priority is not null
+        defaultRegionTypeShouldBeFound("priority.specified=true");
+
+        // Get all the regionTypeList where priority is null
+        defaultRegionTypeShouldNotBeFound("priority.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByPriorityIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where priority greater than or equals to DEFAULT_PRIORITY
+        defaultRegionTypeShouldBeFound("priority.greaterOrEqualThan=" + DEFAULT_PRIORITY);
+
+        // Get all the regionTypeList where priority greater than or equals to UPDATED_PRIORITY
+        defaultRegionTypeShouldNotBeFound("priority.greaterOrEqualThan=" + UPDATED_PRIORITY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllRegionTypesByPriorityIsLessThanSomething() throws Exception {
+        // Initialize the database
+        regionTypeRepository.saveAndFlush(regionType);
+
+        // Get all the regionTypeList where priority less than or equals to DEFAULT_PRIORITY
+        defaultRegionTypeShouldNotBeFound("priority.lessThan=" + DEFAULT_PRIORITY);
+
+        // Get all the regionTypeList where priority less than or equals to UPDATED_PRIORITY
+        defaultRegionTypeShouldBeFound("priority.lessThan=" + UPDATED_PRIORITY);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultRegionTypeShouldBeFound(String filter) throws Exception {
+        restRegionTypeMockMvc.perform(get("/api/region-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(regionType.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].priority").value(hasItem(DEFAULT_PRIORITY.intValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultRegionTypeShouldNotBeFound(String filter) throws Exception {
+        restRegionTypeMockMvc.perform(get("/api/region-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingRegionType() throws Exception {

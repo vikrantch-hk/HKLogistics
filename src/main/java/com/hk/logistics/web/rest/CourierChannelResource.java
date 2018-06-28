@@ -5,6 +5,8 @@ import com.hk.logistics.service.CourierChannelService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.CourierChannelDTO;
+import com.hk.logistics.service.dto.CourierChannelCriteria;
+import com.hk.logistics.service.CourierChannelQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +35,11 @@ public class CourierChannelResource {
 
     private final CourierChannelService courierChannelService;
 
-    public CourierChannelResource(CourierChannelService courierChannelService) {
+    private final CourierChannelQueryService courierChannelQueryService;
+
+    public CourierChannelResource(CourierChannelService courierChannelService, CourierChannelQueryService courierChannelQueryService) {
         this.courierChannelService = courierChannelService;
+        this.courierChannelQueryService = courierChannelQueryService;
     }
 
     /**
@@ -82,13 +87,15 @@ public class CourierChannelResource {
     /**
      * GET  /courier-channels : get all the courierChannels.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of courierChannels in body
      */
     @GetMapping("/courier-channels")
     @Timed
-    public List<CourierChannelDTO> getAllCourierChannels() {
-        log.debug("REST request to get all CourierChannels");
-        return courierChannelService.findAll();
+    public ResponseEntity<List<CourierChannelDTO>> getAllCourierChannels(CourierChannelCriteria criteria) {
+        log.debug("REST request to get CourierChannels by criteria: {}", criteria);
+        List<CourierChannelDTO> entityList = courierChannelQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

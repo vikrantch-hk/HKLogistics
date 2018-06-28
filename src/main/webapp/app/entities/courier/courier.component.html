@@ -24,6 +24,34 @@
             </form>
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-12">Courier Operations
+            <select [(ngModel)]="filterOptions[0]">
+                <option value=""></option>
+                <option value="operations:hkShipping:true">hkShipping</option>
+                <option value="operations:reversePickup:true">reversePickup</option>
+            </select>
+        </div>
+        <div class="col-sm-12">Status
+            <select [(ngModel)]="filterOptions[1]">
+                <option value=""></option>
+                <option value="active:true">Active</option>
+                <option value="active:false">Inactive</option>
+            </select>
+        </div>
+        <div class="col-sm-12">Courier Group
+                <select [(ngModel)]="filterOptions[2]">
+                    <option [ngValue]="null"></option>
+                    <option [ngValue]="courierGroupOption.id" *ngFor="let courierGroupOption of couriergroups; trackBy: trackCourierGroupById" ng-selected="filterOptions[2]">{{courierGroupOption.name}}</option>
+                </select>
+        </div>
+        <button class="input-group-append btn btn-info" (click)="filter(filterOptions)">
+            <fa-icon [icon]="'search'"></fa-icon>
+        </button>
+        <button class="input-group-append btn btn-danger" (click)="clearFilter()" *ngIf="filterOptions">
+            <fa-icon [icon]="'trash-alt'"></fa-icon>
+        </button>
+    </div>
     <br/>
     <div class="table-responsive" *ngIf="couriers">
         <table class="table table-striped">
@@ -38,6 +66,8 @@
             <th jhiSortBy="hkShipping"><span>Hk Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="vendorShipping"><span>Vendor Shipping</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="reversePickup"><span>Reverse Pickup</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="courierGroupName"><span>Courier Group</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="courierChannelId"><span>Courier Channel</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -52,6 +82,16 @@
                 <td>{{courier.hkShipping}}</td>
                 <td>{{courier.vendorShipping}}</td>
                 <td>{{courier.reversePickup}}</td>
+                <td>
+                    <div *ngIf="courier.courierGroupId">
+                        <a [routerLink]="['../courier-group', courier.courierGroupId , 'view' ]" >{{courier.courierGroupName}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="courier.courierChannelId">
+                        <a [routerLink]="['../courier-channel', courier.courierChannelId , 'view' ]" >{{courier.courierChannelName}}</a>
+                    </div>
+                </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

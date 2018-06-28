@@ -13,11 +13,20 @@
         <div class="col-sm-12">
             <form name="searchForm" class="form-inline">
                 <div class="input-group w-100 mt-3">
-                    <input type="text" class="form-control" [(ngModel)]="currentSearch" id="currentSearch" name="currentSearch" placeholder="Query">
-                    <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
-                        <fa-icon [icon]="'search'"></fa-icon>
+                    <input type="text" class="form-control" [(ngModel)]="currentSearchName" id="currentSearchName" name="currentSearchName" placeholder="Query">
+                    <button class="input-group-append btn btn-info" (click)="searchName(currentSearchName)">
+                        <fa-icon [icon]="'search'"></fa-icon>Name
                     </button>
-                    <button class="input-group-append btn btn-danger" (click)="clear()" *ngIf="currentSearch">
+                    <button class="input-group-append btn btn-danger" (click)="clearName()" *ngIf="currentSearchName">
+                        <fa-icon [icon]="'trash-alt'"></fa-icon>
+                    </button>
+                </div>
+                <div class="input-group w-100 mt-3">
+                    <input type="text" class="form-control" [(ngModel)]="currentSearchPriority" id="currentSearchPriority" name="currentSearchPriority" placeholder="Query">
+                    <button class="input-group-append btn btn-info" (click)="searchPriority(currentSearchPriority)">
+                        <fa-icon [icon]="'search'"></fa-icon>Priority
+                    </button>
+                    <button class="input-group-append btn btn-danger" (click)="clearPriority()" *ngIf="currentSearchPriority">
                         <fa-icon [icon]="'trash-alt'"></fa-icon>
                     </button>
                 </div>
@@ -26,7 +35,7 @@
     </div>
     <br/>
     <div class="table-responsive" *ngIf="regionTypes">
-        <table class="table table-striped" id="test">
+        <table class="table table-striped">
             <thead>
             <tr>
             <th><span>ID</span></th>
@@ -67,10 +76,5 @@
             </tr>
             </tbody>
         </table>
-        <label for="files" class="btn btn-primary float-right jh-create-entity create-region-type">Upload</label>
-        <input id="files" style="display: none" type="file" this.value="upload" accept=".xlsx" (change)=upload($event)>
-        <button class="btn btn-primary float-left jh-create-entity create-region-type" (click)="ExportToExcel()">
-                        Download
-                    </button>
     </div>
 </div>

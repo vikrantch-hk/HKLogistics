@@ -3,12 +3,15 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.VendorWHCourierMapping;
+import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.repository.VendorWHCourierMappingRepository;
 import com.hk.logistics.repository.search.VendorWHCourierMappingSearchRepository;
 import com.hk.logistics.service.VendorWHCourierMappingService;
 import com.hk.logistics.service.dto.VendorWHCourierMappingDTO;
 import com.hk.logistics.service.mapper.VendorWHCourierMappingMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.VendorWHCourierMappingCriteria;
+import com.hk.logistics.service.VendorWHCourierMappingQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +78,9 @@ public class VendorWHCourierMappingResourceIntTest {
     private VendorWHCourierMappingSearchRepository mockVendorWHCourierMappingSearchRepository;
 
     @Autowired
+    private VendorWHCourierMappingQueryService vendorWHCourierMappingQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -93,7 +99,7 @@ public class VendorWHCourierMappingResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final VendorWHCourierMappingResource vendorWHCourierMappingResource = new VendorWHCourierMappingResource(vendorWHCourierMappingService);
+        final VendorWHCourierMappingResource vendorWHCourierMappingResource = new VendorWHCourierMappingResource(vendorWHCourierMappingService, vendorWHCourierMappingQueryService);
         this.restVendorWHCourierMappingMockMvc = MockMvcBuilders.standaloneSetup(vendorWHCourierMappingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -218,6 +224,193 @@ public class VendorWHCourierMappingResourceIntTest {
             .andExpect(jsonPath("$.vendor").value(DEFAULT_VENDOR.toString()))
             .andExpect(jsonPath("$.warehouse").value(DEFAULT_WAREHOUSE.intValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where active equals to DEFAULT_ACTIVE
+        defaultVendorWHCourierMappingShouldBeFound("active.equals=" + DEFAULT_ACTIVE);
+
+        // Get all the vendorWHCourierMappingList where active equals to UPDATED_ACTIVE
+        defaultVendorWHCourierMappingShouldNotBeFound("active.equals=" + UPDATED_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where active in DEFAULT_ACTIVE or UPDATED_ACTIVE
+        defaultVendorWHCourierMappingShouldBeFound("active.in=" + DEFAULT_ACTIVE + "," + UPDATED_ACTIVE);
+
+        // Get all the vendorWHCourierMappingList where active equals to UPDATED_ACTIVE
+        defaultVendorWHCourierMappingShouldNotBeFound("active.in=" + UPDATED_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where active is not null
+        defaultVendorWHCourierMappingShouldBeFound("active.specified=true");
+
+        // Get all the vendorWHCourierMappingList where active is null
+        defaultVendorWHCourierMappingShouldNotBeFound("active.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByVendorIsEqualToSomething() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where vendor equals to DEFAULT_VENDOR
+        defaultVendorWHCourierMappingShouldBeFound("vendor.equals=" + DEFAULT_VENDOR);
+
+        // Get all the vendorWHCourierMappingList where vendor equals to UPDATED_VENDOR
+        defaultVendorWHCourierMappingShouldNotBeFound("vendor.equals=" + UPDATED_VENDOR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByVendorIsInShouldWork() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where vendor in DEFAULT_VENDOR or UPDATED_VENDOR
+        defaultVendorWHCourierMappingShouldBeFound("vendor.in=" + DEFAULT_VENDOR + "," + UPDATED_VENDOR);
+
+        // Get all the vendorWHCourierMappingList where vendor equals to UPDATED_VENDOR
+        defaultVendorWHCourierMappingShouldNotBeFound("vendor.in=" + UPDATED_VENDOR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByVendorIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where vendor is not null
+        defaultVendorWHCourierMappingShouldBeFound("vendor.specified=true");
+
+        // Get all the vendorWHCourierMappingList where vendor is null
+        defaultVendorWHCourierMappingShouldNotBeFound("vendor.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByWarehouseIsEqualToSomething() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where warehouse equals to DEFAULT_WAREHOUSE
+        defaultVendorWHCourierMappingShouldBeFound("warehouse.equals=" + DEFAULT_WAREHOUSE);
+
+        // Get all the vendorWHCourierMappingList where warehouse equals to UPDATED_WAREHOUSE
+        defaultVendorWHCourierMappingShouldNotBeFound("warehouse.equals=" + UPDATED_WAREHOUSE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByWarehouseIsInShouldWork() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where warehouse in DEFAULT_WAREHOUSE or UPDATED_WAREHOUSE
+        defaultVendorWHCourierMappingShouldBeFound("warehouse.in=" + DEFAULT_WAREHOUSE + "," + UPDATED_WAREHOUSE);
+
+        // Get all the vendorWHCourierMappingList where warehouse equals to UPDATED_WAREHOUSE
+        defaultVendorWHCourierMappingShouldNotBeFound("warehouse.in=" + UPDATED_WAREHOUSE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByWarehouseIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where warehouse is not null
+        defaultVendorWHCourierMappingShouldBeFound("warehouse.specified=true");
+
+        // Get all the vendorWHCourierMappingList where warehouse is null
+        defaultVendorWHCourierMappingShouldNotBeFound("warehouse.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByWarehouseIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where warehouse greater than or equals to DEFAULT_WAREHOUSE
+        defaultVendorWHCourierMappingShouldBeFound("warehouse.greaterOrEqualThan=" + DEFAULT_WAREHOUSE);
+
+        // Get all the vendorWHCourierMappingList where warehouse greater than or equals to UPDATED_WAREHOUSE
+        defaultVendorWHCourierMappingShouldNotBeFound("warehouse.greaterOrEqualThan=" + UPDATED_WAREHOUSE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByWarehouseIsLessThanSomething() throws Exception {
+        // Initialize the database
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+
+        // Get all the vendorWHCourierMappingList where warehouse less than or equals to DEFAULT_WAREHOUSE
+        defaultVendorWHCourierMappingShouldNotBeFound("warehouse.lessThan=" + DEFAULT_WAREHOUSE);
+
+        // Get all the vendorWHCourierMappingList where warehouse less than or equals to UPDATED_WAREHOUSE
+        defaultVendorWHCourierMappingShouldBeFound("warehouse.lessThan=" + UPDATED_WAREHOUSE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllVendorWHCourierMappingsByCourierChannelIsEqualToSomething() throws Exception {
+        // Initialize the database
+        CourierChannel courierChannel = CourierChannelResourceIntTest.createEntity(em);
+        em.persist(courierChannel);
+        em.flush();
+        vendorWHCourierMapping.setCourierChannel(courierChannel);
+        vendorWHCourierMappingRepository.saveAndFlush(vendorWHCourierMapping);
+        Long courierChannelId = courierChannel.getId();
+
+        // Get all the vendorWHCourierMappingList where courierChannel equals to courierChannelId
+        defaultVendorWHCourierMappingShouldBeFound("courierChannelId.equals=" + courierChannelId);
+
+        // Get all the vendorWHCourierMappingList where courierChannel equals to courierChannelId + 1
+        defaultVendorWHCourierMappingShouldNotBeFound("courierChannelId.equals=" + (courierChannelId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultVendorWHCourierMappingShouldBeFound(String filter) throws Exception {
+        restVendorWHCourierMappingMockMvc.perform(get("/api/vendor-wh-courier-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(vendorWHCourierMapping.getId().intValue())))
+            .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
+            .andExpect(jsonPath("$.[*].vendor").value(hasItem(DEFAULT_VENDOR.toString())))
+            .andExpect(jsonPath("$.[*].warehouse").value(hasItem(DEFAULT_WAREHOUSE.intValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultVendorWHCourierMappingShouldNotBeFound(String filter) throws Exception {
+        restVendorWHCourierMappingMockMvc.perform(get("/api/vendor-wh-courier-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingVendorWHCourierMapping() throws Exception {

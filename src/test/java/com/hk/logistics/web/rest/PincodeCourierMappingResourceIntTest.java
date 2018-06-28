@@ -3,12 +3,17 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.PincodeCourierMapping;
+import com.hk.logistics.domain.Pincode;
+import com.hk.logistics.domain.VendorWHCourierMapping;
+import com.hk.logistics.domain.SourceDestinationMapping;
 import com.hk.logistics.repository.PincodeCourierMappingRepository;
 import com.hk.logistics.repository.search.PincodeCourierMappingSearchRepository;
 import com.hk.logistics.service.PincodeCourierMappingService;
 import com.hk.logistics.service.dto.PincodeCourierMappingDTO;
 import com.hk.logistics.service.mapper.PincodeCourierMappingMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.PincodeCourierMappingCriteria;
+import com.hk.logistics.service.PincodeCourierMappingQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,6 +113,9 @@ public class PincodeCourierMappingResourceIntTest {
     private PincodeCourierMappingSearchRepository mockPincodeCourierMappingSearchRepository;
 
     @Autowired
+    private PincodeCourierMappingQueryService pincodeCourierMappingQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -126,7 +134,7 @@ public class PincodeCourierMappingResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PincodeCourierMappingResource pincodeCourierMappingResource = new PincodeCourierMappingResource(pincodeCourierMappingService);
+        final PincodeCourierMappingResource pincodeCourierMappingResource = new PincodeCourierMappingResource(pincodeCourierMappingService, pincodeCourierMappingQueryService);
         this.restPincodeCourierMappingMockMvc = MockMvcBuilders.standaloneSetup(pincodeCourierMappingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -466,6 +474,644 @@ public class PincodeCourierMappingResourceIntTest {
             .andExpect(jsonPath("$.deliveryTypeOne").value(DEFAULT_DELIVERY_TYPE_ONE.booleanValue()))
             .andExpect(jsonPath("$.deliveryTypeTwo").value(DEFAULT_DELIVERY_TYPE_TWO.booleanValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByRoutingCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where routingCode equals to DEFAULT_ROUTING_CODE
+        defaultPincodeCourierMappingShouldBeFound("routingCode.equals=" + DEFAULT_ROUTING_CODE);
+
+        // Get all the pincodeCourierMappingList where routingCode equals to UPDATED_ROUTING_CODE
+        defaultPincodeCourierMappingShouldNotBeFound("routingCode.equals=" + UPDATED_ROUTING_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByRoutingCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where routingCode in DEFAULT_ROUTING_CODE or UPDATED_ROUTING_CODE
+        defaultPincodeCourierMappingShouldBeFound("routingCode.in=" + DEFAULT_ROUTING_CODE + "," + UPDATED_ROUTING_CODE);
+
+        // Get all the pincodeCourierMappingList where routingCode equals to UPDATED_ROUTING_CODE
+        defaultPincodeCourierMappingShouldNotBeFound("routingCode.in=" + UPDATED_ROUTING_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByRoutingCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where routingCode is not null
+        defaultPincodeCourierMappingShouldBeFound("routingCode.specified=true");
+
+        // Get all the pincodeCourierMappingList where routingCode is null
+        defaultPincodeCourierMappingShouldNotBeFound("routingCode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByApplicableForCheapestCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier equals to DEFAULT_APPLICABLE_FOR_CHEAPEST_COURIER
+        defaultPincodeCourierMappingShouldBeFound("applicableForCheapestCourier.equals=" + DEFAULT_APPLICABLE_FOR_CHEAPEST_COURIER);
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier equals to UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER
+        defaultPincodeCourierMappingShouldNotBeFound("applicableForCheapestCourier.equals=" + UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByApplicableForCheapestCourierIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier in DEFAULT_APPLICABLE_FOR_CHEAPEST_COURIER or UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER
+        defaultPincodeCourierMappingShouldBeFound("applicableForCheapestCourier.in=" + DEFAULT_APPLICABLE_FOR_CHEAPEST_COURIER + "," + UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER);
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier equals to UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER
+        defaultPincodeCourierMappingShouldNotBeFound("applicableForCheapestCourier.in=" + UPDATED_APPLICABLE_FOR_CHEAPEST_COURIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByApplicableForCheapestCourierIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier is not null
+        defaultPincodeCourierMappingShouldBeFound("applicableForCheapestCourier.specified=true");
+
+        // Get all the pincodeCourierMappingList where applicableForCheapestCourier is null
+        defaultPincodeCourierMappingShouldNotBeFound("applicableForCheapestCourier.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByEstimatedDeliveryDaysIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays equals to DEFAULT_ESTIMATED_DELIVERY_DAYS
+        defaultPincodeCourierMappingShouldBeFound("estimatedDeliveryDays.equals=" + DEFAULT_ESTIMATED_DELIVERY_DAYS);
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays equals to UPDATED_ESTIMATED_DELIVERY_DAYS
+        defaultPincodeCourierMappingShouldNotBeFound("estimatedDeliveryDays.equals=" + UPDATED_ESTIMATED_DELIVERY_DAYS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByEstimatedDeliveryDaysIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays in DEFAULT_ESTIMATED_DELIVERY_DAYS or UPDATED_ESTIMATED_DELIVERY_DAYS
+        defaultPincodeCourierMappingShouldBeFound("estimatedDeliveryDays.in=" + DEFAULT_ESTIMATED_DELIVERY_DAYS + "," + UPDATED_ESTIMATED_DELIVERY_DAYS);
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays equals to UPDATED_ESTIMATED_DELIVERY_DAYS
+        defaultPincodeCourierMappingShouldNotBeFound("estimatedDeliveryDays.in=" + UPDATED_ESTIMATED_DELIVERY_DAYS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByEstimatedDeliveryDaysIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays is not null
+        defaultPincodeCourierMappingShouldBeFound("estimatedDeliveryDays.specified=true");
+
+        // Get all the pincodeCourierMappingList where estimatedDeliveryDays is null
+        defaultPincodeCourierMappingShouldNotBeFound("estimatedDeliveryDays.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPickupAvailableIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where pickupAvailable equals to DEFAULT_PICKUP_AVAILABLE
+        defaultPincodeCourierMappingShouldBeFound("pickupAvailable.equals=" + DEFAULT_PICKUP_AVAILABLE);
+
+        // Get all the pincodeCourierMappingList where pickupAvailable equals to UPDATED_PICKUP_AVAILABLE
+        defaultPincodeCourierMappingShouldNotBeFound("pickupAvailable.equals=" + UPDATED_PICKUP_AVAILABLE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPickupAvailableIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where pickupAvailable in DEFAULT_PICKUP_AVAILABLE or UPDATED_PICKUP_AVAILABLE
+        defaultPincodeCourierMappingShouldBeFound("pickupAvailable.in=" + DEFAULT_PICKUP_AVAILABLE + "," + UPDATED_PICKUP_AVAILABLE);
+
+        // Get all the pincodeCourierMappingList where pickupAvailable equals to UPDATED_PICKUP_AVAILABLE
+        defaultPincodeCourierMappingShouldNotBeFound("pickupAvailable.in=" + UPDATED_PICKUP_AVAILABLE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPickupAvailableIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where pickupAvailable is not null
+        defaultPincodeCourierMappingShouldBeFound("pickupAvailable.specified=true");
+
+        // Get all the pincodeCourierMappingList where pickupAvailable is null
+        defaultPincodeCourierMappingShouldNotBeFound("pickupAvailable.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidAirIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidAir equals to DEFAULT_PREPAID_AIR
+        defaultPincodeCourierMappingShouldBeFound("prepaidAir.equals=" + DEFAULT_PREPAID_AIR);
+
+        // Get all the pincodeCourierMappingList where prepaidAir equals to UPDATED_PREPAID_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidAir.equals=" + UPDATED_PREPAID_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidAirIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidAir in DEFAULT_PREPAID_AIR or UPDATED_PREPAID_AIR
+        defaultPincodeCourierMappingShouldBeFound("prepaidAir.in=" + DEFAULT_PREPAID_AIR + "," + UPDATED_PREPAID_AIR);
+
+        // Get all the pincodeCourierMappingList where prepaidAir equals to UPDATED_PREPAID_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidAir.in=" + UPDATED_PREPAID_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidAirIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidAir is not null
+        defaultPincodeCourierMappingShouldBeFound("prepaidAir.specified=true");
+
+        // Get all the pincodeCourierMappingList where prepaidAir is null
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidAir.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidGroundIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidGround equals to DEFAULT_PREPAID_GROUND
+        defaultPincodeCourierMappingShouldBeFound("prepaidGround.equals=" + DEFAULT_PREPAID_GROUND);
+
+        // Get all the pincodeCourierMappingList where prepaidGround equals to UPDATED_PREPAID_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidGround.equals=" + UPDATED_PREPAID_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidGroundIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidGround in DEFAULT_PREPAID_GROUND or UPDATED_PREPAID_GROUND
+        defaultPincodeCourierMappingShouldBeFound("prepaidGround.in=" + DEFAULT_PREPAID_GROUND + "," + UPDATED_PREPAID_GROUND);
+
+        // Get all the pincodeCourierMappingList where prepaidGround equals to UPDATED_PREPAID_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidGround.in=" + UPDATED_PREPAID_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPrepaidGroundIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where prepaidGround is not null
+        defaultPincodeCourierMappingShouldBeFound("prepaidGround.specified=true");
+
+        // Get all the pincodeCourierMappingList where prepaidGround is null
+        defaultPincodeCourierMappingShouldNotBeFound("prepaidGround.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodAirIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codAir equals to DEFAULT_COD_AIR
+        defaultPincodeCourierMappingShouldBeFound("codAir.equals=" + DEFAULT_COD_AIR);
+
+        // Get all the pincodeCourierMappingList where codAir equals to UPDATED_COD_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("codAir.equals=" + UPDATED_COD_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodAirIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codAir in DEFAULT_COD_AIR or UPDATED_COD_AIR
+        defaultPincodeCourierMappingShouldBeFound("codAir.in=" + DEFAULT_COD_AIR + "," + UPDATED_COD_AIR);
+
+        // Get all the pincodeCourierMappingList where codAir equals to UPDATED_COD_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("codAir.in=" + UPDATED_COD_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodAirIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codAir is not null
+        defaultPincodeCourierMappingShouldBeFound("codAir.specified=true");
+
+        // Get all the pincodeCourierMappingList where codAir is null
+        defaultPincodeCourierMappingShouldNotBeFound("codAir.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodGroundIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codGround equals to DEFAULT_COD_GROUND
+        defaultPincodeCourierMappingShouldBeFound("codGround.equals=" + DEFAULT_COD_GROUND);
+
+        // Get all the pincodeCourierMappingList where codGround equals to UPDATED_COD_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("codGround.equals=" + UPDATED_COD_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodGroundIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codGround in DEFAULT_COD_GROUND or UPDATED_COD_GROUND
+        defaultPincodeCourierMappingShouldBeFound("codGround.in=" + DEFAULT_COD_GROUND + "," + UPDATED_COD_GROUND);
+
+        // Get all the pincodeCourierMappingList where codGround equals to UPDATED_COD_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("codGround.in=" + UPDATED_COD_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCodGroundIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where codGround is not null
+        defaultPincodeCourierMappingShouldBeFound("codGround.specified=true");
+
+        // Get all the pincodeCourierMappingList where codGround is null
+        defaultPincodeCourierMappingShouldNotBeFound("codGround.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseAirIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseAir equals to DEFAULT_REVERSE_AIR
+        defaultPincodeCourierMappingShouldBeFound("reverseAir.equals=" + DEFAULT_REVERSE_AIR);
+
+        // Get all the pincodeCourierMappingList where reverseAir equals to UPDATED_REVERSE_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("reverseAir.equals=" + UPDATED_REVERSE_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseAirIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseAir in DEFAULT_REVERSE_AIR or UPDATED_REVERSE_AIR
+        defaultPincodeCourierMappingShouldBeFound("reverseAir.in=" + DEFAULT_REVERSE_AIR + "," + UPDATED_REVERSE_AIR);
+
+        // Get all the pincodeCourierMappingList where reverseAir equals to UPDATED_REVERSE_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("reverseAir.in=" + UPDATED_REVERSE_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseAirIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseAir is not null
+        defaultPincodeCourierMappingShouldBeFound("reverseAir.specified=true");
+
+        // Get all the pincodeCourierMappingList where reverseAir is null
+        defaultPincodeCourierMappingShouldNotBeFound("reverseAir.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseGroundIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseGround equals to DEFAULT_REVERSE_GROUND
+        defaultPincodeCourierMappingShouldBeFound("reverseGround.equals=" + DEFAULT_REVERSE_GROUND);
+
+        // Get all the pincodeCourierMappingList where reverseGround equals to UPDATED_REVERSE_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("reverseGround.equals=" + UPDATED_REVERSE_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseGroundIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseGround in DEFAULT_REVERSE_GROUND or UPDATED_REVERSE_GROUND
+        defaultPincodeCourierMappingShouldBeFound("reverseGround.in=" + DEFAULT_REVERSE_GROUND + "," + UPDATED_REVERSE_GROUND);
+
+        // Get all the pincodeCourierMappingList where reverseGround equals to UPDATED_REVERSE_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("reverseGround.in=" + UPDATED_REVERSE_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByReverseGroundIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where reverseGround is not null
+        defaultPincodeCourierMappingShouldBeFound("reverseGround.specified=true");
+
+        // Get all the pincodeCourierMappingList where reverseGround is null
+        defaultPincodeCourierMappingShouldNotBeFound("reverseGround.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryAirIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir equals to DEFAULT_CARD_ON_DELIVERY_AIR
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryAir.equals=" + DEFAULT_CARD_ON_DELIVERY_AIR);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir equals to UPDATED_CARD_ON_DELIVERY_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryAir.equals=" + UPDATED_CARD_ON_DELIVERY_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryAirIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir in DEFAULT_CARD_ON_DELIVERY_AIR or UPDATED_CARD_ON_DELIVERY_AIR
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryAir.in=" + DEFAULT_CARD_ON_DELIVERY_AIR + "," + UPDATED_CARD_ON_DELIVERY_AIR);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir equals to UPDATED_CARD_ON_DELIVERY_AIR
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryAir.in=" + UPDATED_CARD_ON_DELIVERY_AIR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryAirIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir is not null
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryAir.specified=true");
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryAir is null
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryAir.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryGroundIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround equals to DEFAULT_CARD_ON_DELIVERY_GROUND
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryGround.equals=" + DEFAULT_CARD_ON_DELIVERY_GROUND);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround equals to UPDATED_CARD_ON_DELIVERY_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryGround.equals=" + UPDATED_CARD_ON_DELIVERY_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryGroundIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround in DEFAULT_CARD_ON_DELIVERY_GROUND or UPDATED_CARD_ON_DELIVERY_GROUND
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryGround.in=" + DEFAULT_CARD_ON_DELIVERY_GROUND + "," + UPDATED_CARD_ON_DELIVERY_GROUND);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround equals to UPDATED_CARD_ON_DELIVERY_GROUND
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryGround.in=" + UPDATED_CARD_ON_DELIVERY_GROUND);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByCardOnDeliveryGroundIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround is not null
+        defaultPincodeCourierMappingShouldBeFound("cardOnDeliveryGround.specified=true");
+
+        // Get all the pincodeCourierMappingList where cardOnDeliveryGround is null
+        defaultPincodeCourierMappingShouldNotBeFound("cardOnDeliveryGround.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeOneIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne equals to DEFAULT_DELIVERY_TYPE_ONE
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeOne.equals=" + DEFAULT_DELIVERY_TYPE_ONE);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne equals to UPDATED_DELIVERY_TYPE_ONE
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeOne.equals=" + UPDATED_DELIVERY_TYPE_ONE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeOneIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne in DEFAULT_DELIVERY_TYPE_ONE or UPDATED_DELIVERY_TYPE_ONE
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeOne.in=" + DEFAULT_DELIVERY_TYPE_ONE + "," + UPDATED_DELIVERY_TYPE_ONE);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne equals to UPDATED_DELIVERY_TYPE_ONE
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeOne.in=" + UPDATED_DELIVERY_TYPE_ONE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeOneIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne is not null
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeOne.specified=true");
+
+        // Get all the pincodeCourierMappingList where deliveryTypeOne is null
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeOne.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeTwoIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo equals to DEFAULT_DELIVERY_TYPE_TWO
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeTwo.equals=" + DEFAULT_DELIVERY_TYPE_TWO);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo equals to UPDATED_DELIVERY_TYPE_TWO
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeTwo.equals=" + UPDATED_DELIVERY_TYPE_TWO);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeTwoIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo in DEFAULT_DELIVERY_TYPE_TWO or UPDATED_DELIVERY_TYPE_TWO
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeTwo.in=" + DEFAULT_DELIVERY_TYPE_TWO + "," + UPDATED_DELIVERY_TYPE_TWO);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo equals to UPDATED_DELIVERY_TYPE_TWO
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeTwo.in=" + UPDATED_DELIVERY_TYPE_TWO);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByDeliveryTypeTwoIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo is not null
+        defaultPincodeCourierMappingShouldBeFound("deliveryTypeTwo.specified=true");
+
+        // Get all the pincodeCourierMappingList where deliveryTypeTwo is null
+        defaultPincodeCourierMappingShouldNotBeFound("deliveryTypeTwo.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByPincodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Pincode pincode = PincodeResourceIntTest.createEntity(em);
+        em.persist(pincode);
+        em.flush();
+        pincodeCourierMapping.setPincode(pincode);
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+        Long pincodeId = pincode.getId();
+
+        // Get all the pincodeCourierMappingList where pincode equals to pincodeId
+        defaultPincodeCourierMappingShouldBeFound("pincodeId.equals=" + pincodeId);
+
+        // Get all the pincodeCourierMappingList where pincode equals to pincodeId + 1
+        defaultPincodeCourierMappingShouldNotBeFound("pincodeId.equals=" + (pincodeId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsByVendorWHCourierMappingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        VendorWHCourierMapping vendorWHCourierMapping = VendorWHCourierMappingResourceIntTest.createEntity(em);
+        em.persist(vendorWHCourierMapping);
+        em.flush();
+        pincodeCourierMapping.setVendorWHCourierMapping(vendorWHCourierMapping);
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+        Long vendorWHCourierMappingId = vendorWHCourierMapping.getId();
+
+        // Get all the pincodeCourierMappingList where vendorWHCourierMapping equals to vendorWHCourierMappingId
+        defaultPincodeCourierMappingShouldBeFound("vendorWHCourierMappingId.equals=" + vendorWHCourierMappingId);
+
+        // Get all the pincodeCourierMappingList where vendorWHCourierMapping equals to vendorWHCourierMappingId + 1
+        defaultPincodeCourierMappingShouldNotBeFound("vendorWHCourierMappingId.equals=" + (vendorWHCourierMappingId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodeCourierMappingsBySourceDestinationMappingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        SourceDestinationMapping sourceDestinationMapping = SourceDestinationMappingResourceIntTest.createEntity(em);
+        em.persist(sourceDestinationMapping);
+        em.flush();
+        pincodeCourierMapping.setSourceDestinationMapping(sourceDestinationMapping);
+        pincodeCourierMappingRepository.saveAndFlush(pincodeCourierMapping);
+        Long sourceDestinationMappingId = sourceDestinationMapping.getId();
+
+        // Get all the pincodeCourierMappingList where sourceDestinationMapping equals to sourceDestinationMappingId
+        defaultPincodeCourierMappingShouldBeFound("sourceDestinationMappingId.equals=" + sourceDestinationMappingId);
+
+        // Get all the pincodeCourierMappingList where sourceDestinationMapping equals to sourceDestinationMappingId + 1
+        defaultPincodeCourierMappingShouldNotBeFound("sourceDestinationMappingId.equals=" + (sourceDestinationMappingId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultPincodeCourierMappingShouldBeFound(String filter) throws Exception {
+        restPincodeCourierMappingMockMvc.perform(get("/api/pincode-courier-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(pincodeCourierMapping.getId().intValue())))
+            .andExpect(jsonPath("$.[*].routingCode").value(hasItem(DEFAULT_ROUTING_CODE.toString())))
+            .andExpect(jsonPath("$.[*].applicableForCheapestCourier").value(hasItem(DEFAULT_APPLICABLE_FOR_CHEAPEST_COURIER.booleanValue())))
+            .andExpect(jsonPath("$.[*].estimatedDeliveryDays").value(hasItem(DEFAULT_ESTIMATED_DELIVERY_DAYS.doubleValue())))
+            .andExpect(jsonPath("$.[*].pickupAvailable").value(hasItem(DEFAULT_PICKUP_AVAILABLE.booleanValue())))
+            .andExpect(jsonPath("$.[*].prepaidAir").value(hasItem(DEFAULT_PREPAID_AIR.booleanValue())))
+            .andExpect(jsonPath("$.[*].prepaidGround").value(hasItem(DEFAULT_PREPAID_GROUND.booleanValue())))
+            .andExpect(jsonPath("$.[*].codAir").value(hasItem(DEFAULT_COD_AIR.booleanValue())))
+            .andExpect(jsonPath("$.[*].codGround").value(hasItem(DEFAULT_COD_GROUND.booleanValue())))
+            .andExpect(jsonPath("$.[*].reverseAir").value(hasItem(DEFAULT_REVERSE_AIR.booleanValue())))
+            .andExpect(jsonPath("$.[*].reverseGround").value(hasItem(DEFAULT_REVERSE_GROUND.booleanValue())))
+            .andExpect(jsonPath("$.[*].cardOnDeliveryAir").value(hasItem(DEFAULT_CARD_ON_DELIVERY_AIR.booleanValue())))
+            .andExpect(jsonPath("$.[*].cardOnDeliveryGround").value(hasItem(DEFAULT_CARD_ON_DELIVERY_GROUND.booleanValue())))
+            .andExpect(jsonPath("$.[*].deliveryTypeOne").value(hasItem(DEFAULT_DELIVERY_TYPE_ONE.booleanValue())))
+            .andExpect(jsonPath("$.[*].deliveryTypeTwo").value(hasItem(DEFAULT_DELIVERY_TYPE_TWO.booleanValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultPincodeCourierMappingShouldNotBeFound(String filter) throws Exception {
+        restPincodeCourierMappingMockMvc.perform(get("/api/pincode-courier-mappings?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingPincodeCourierMapping() throws Exception {

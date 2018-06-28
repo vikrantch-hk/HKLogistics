@@ -8,11 +8,17 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity Courier and its DTO CourierDTO.
  */
-@Mapper(componentModel = "spring", uses = {CourierGroupMapper.class})
+@Mapper(componentModel = "spring", uses = {CourierGroupMapper.class, CourierChannelMapper.class})
 public interface CourierMapper extends EntityMapper<CourierDTO, Courier> {
 
+    @Mapping(source = "courierGroup.id", target = "courierGroupId")
+    @Mapping(source = "courierGroup.name", target = "courierGroupName")
+    @Mapping(source = "courierChannel.id", target = "courierChannelId")
+    @Mapping(source = "courierChannel.channel.name", target = "courierChannelName")
+    CourierDTO toDto(Courier courier);
 
-    @Mapping(target = "courierChannels", ignore = true)
+    @Mapping(source = "courierGroupId", target = "courierGroup")
+    @Mapping(source = "courierChannelId", target = "courierChannel")
     Courier toEntity(CourierDTO courierDTO);
 
     default Courier fromId(Long id) {

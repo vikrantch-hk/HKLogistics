@@ -5,6 +5,8 @@ import com.hk.logistics.service.SourceDestinationMappingService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.SourceDestinationMappingDTO;
+import com.hk.logistics.service.dto.SourceDestinationMappingCriteria;
+import com.hk.logistics.service.SourceDestinationMappingQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class SourceDestinationMappingResource {
 
     private final SourceDestinationMappingService sourceDestinationMappingService;
 
-    public SourceDestinationMappingResource(SourceDestinationMappingService sourceDestinationMappingService) {
+    private final SourceDestinationMappingQueryService sourceDestinationMappingQueryService;
+
+    public SourceDestinationMappingResource(SourceDestinationMappingService sourceDestinationMappingService, SourceDestinationMappingQueryService sourceDestinationMappingQueryService) {
         this.sourceDestinationMappingService = sourceDestinationMappingService;
+        this.sourceDestinationMappingQueryService = sourceDestinationMappingQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class SourceDestinationMappingResource {
     /**
      * GET  /source-destination-mappings : get all the sourceDestinationMappings.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of sourceDestinationMappings in body
      */
     @GetMapping("/source-destination-mappings")
     @Timed
-    public List<SourceDestinationMappingDTO> getAllSourceDestinationMappings() {
-        log.debug("REST request to get all SourceDestinationMappings");
-        return sourceDestinationMappingService.findAll();
+    public ResponseEntity<List<SourceDestinationMappingDTO>> getAllSourceDestinationMappings(SourceDestinationMappingCriteria criteria) {
+        log.debug("REST request to get SourceDestinationMappings by criteria: {}", criteria);
+        List<SourceDestinationMappingDTO> entityList = sourceDestinationMappingQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

@@ -5,6 +5,8 @@ import com.hk.logistics.service.PincodeService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.PincodeDTO;
+import com.hk.logistics.service.dto.PincodeCriteria;
+import com.hk.logistics.service.PincodeQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class PincodeResource {
 
     private final PincodeService pincodeService;
 
-    public PincodeResource(PincodeService pincodeService) {
+    private final PincodeQueryService pincodeQueryService;
+
+    public PincodeResource(PincodeService pincodeService, PincodeQueryService pincodeQueryService) {
         this.pincodeService = pincodeService;
+        this.pincodeQueryService = pincodeQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class PincodeResource {
     /**
      * GET  /pincodes : get all the pincodes.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of pincodes in body
      */
     @GetMapping("/pincodes")
     @Timed
-    public List<PincodeDTO> getAllPincodes() {
-        log.debug("REST request to get all Pincodes");
-        return pincodeService.findAll();
+    public ResponseEntity<List<PincodeDTO>> getAllPincodes(PincodeCriteria criteria) {
+        log.debug("REST request to get Pincodes by criteria: {}", criteria);
+        List<PincodeDTO> entityList = pincodeQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

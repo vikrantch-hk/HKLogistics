@@ -70,15 +70,6 @@ public class CourierServiceImpl implements CourierService {
             .map(courierMapper::toDto);
     }
 
-    /**
-     * Get all the Courier with eager load of many-to-many relationships.
-     *
-     * @return the list of entities
-     */
-    public Page<CourierDTO> findAllWithEagerRelationships(Pageable pageable) {
-        return courierRepository.findAllWithEagerRelationships(pageable).map(courierMapper::toDto);
-    }
-    
 
     /**
      * Get one courier by id.
@@ -90,7 +81,7 @@ public class CourierServiceImpl implements CourierService {
     @Transactional(readOnly = true)
     public Optional<CourierDTO> findOne(Long id) {
         log.debug("Request to get Courier : {}", id);
-        return courierRepository.findOneWithEagerRelationships(id)
+        return courierRepository.findById(id)
             .map(courierMapper::toDto);
     }
 

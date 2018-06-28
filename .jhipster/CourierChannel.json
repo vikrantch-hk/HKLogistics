@@ -28,10 +28,10 @@
             "otherEntityField": "name"
         },
         {
-            "relationshipType": "many-to-one",
+            "relationshipType": "one-to-many",
             "relationshipName": "courier",
             "otherEntityName": "courier",
-            "otherEntityField": "name"
+            "otherEntityRelationshipName": "courierChannel"
         }
     ],
     "changelogDate": "20180620165216",
@@ -39,7 +39,7 @@
     "dto": "mapstruct",
     "pagination": "no",
     "service": "serviceImpl",
-    "jpaMetamodelFiltering": false,
+    "jpaMetamodelFiltering": true,
     "fluentMethods": true,
     "clientRootFolder": "",
     "applications": "*"

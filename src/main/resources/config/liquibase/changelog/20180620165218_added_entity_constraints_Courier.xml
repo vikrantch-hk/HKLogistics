@@ -8,16 +8,17 @@
     -->
     <changeSet id="20180620165218-2" author="jhipster">
         
-        <addForeignKeyConstraint baseColumnNames="couriers_id"
-                                 baseTableName="courier_courier_group"
-                                 constraintName="fk_courier_courier_group_couriers_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="courier"/>
-        <addForeignKeyConstraint baseColumnNames="courier_groups_id"
-                                 baseTableName="courier_courier_group"
-                                 constraintName="fk_courier_courier_group_courier_groups_id"
+        <addForeignKeyConstraint baseColumnNames="courier_group_id"
+                                 baseTableName="courier"
+                                 constraintName="fk_courier_courier_group_id"
                                  referencedColumnNames="id"
                                  referencedTableName="courier_group"/>
-        
+
+        <addForeignKeyConstraint baseColumnNames="courier_channel_id"
+                                 baseTableName="courier"
+                                 constraintName="fk_courier_courier_channel_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="courier_channel"/>
+
     </changeSet>
 </databaseChangeLog>

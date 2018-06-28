@@ -3,6 +3,7 @@ package com.hk.logistics.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.hk.logistics.domain.CourierChannel;
@@ -14,7 +15,7 @@ import com.hk.logistics.domain.VendorWHCourierMapping;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface VendorWHCourierMappingRepository extends JpaRepository<VendorWHCourierMapping, Long> {
+public interface VendorWHCourierMappingRepository extends JpaRepository<VendorWHCourierMapping, Long>, JpaSpecificationExecutor<VendorWHCourierMapping> {
 
 
 	List<VendorWHCourierMapping> findByVendorAndCourierChannelInAndActive(String vendor,List<CourierChannel> courierChannel,Boolean active);

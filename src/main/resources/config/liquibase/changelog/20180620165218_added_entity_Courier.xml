@@ -54,19 +54,16 @@
                 <constraints nullable="true" />
             </column>
 
+            <column name="courier_group_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="courier_channel_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
         </createTable>
-        
-        <createTable tableName="courier_courier_group">
-            <column name="courier_groups_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="couriers_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addPrimaryKey columnNames="couriers_id, courier_groups_id" tableName="courier_courier_group"/>
         
     </changeSet>
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here, do not remove-->

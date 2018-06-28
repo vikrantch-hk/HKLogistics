@@ -5,6 +5,8 @@ import com.hk.logistics.service.HubService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.HubDTO;
+import com.hk.logistics.service.dto.HubCriteria;
+import com.hk.logistics.service.HubQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class HubResource {
 
     private final HubService hubService;
 
-    public HubResource(HubService hubService) {
+    private final HubQueryService hubQueryService;
+
+    public HubResource(HubService hubService, HubQueryService hubQueryService) {
         this.hubService = hubService;
+        this.hubQueryService = hubQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class HubResource {
     /**
      * GET  /hubs : get all the hubs.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of hubs in body
      */
     @GetMapping("/hubs")
     @Timed
-    public List<HubDTO> getAllHubs() {
-        log.debug("REST request to get all Hubs");
-        return hubService.findAll();
+    public ResponseEntity<List<HubDTO>> getAllHubs(HubCriteria criteria) {
+        log.debug("REST request to get Hubs by criteria: {}", criteria);
+        List<HubDTO> entityList = hubQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

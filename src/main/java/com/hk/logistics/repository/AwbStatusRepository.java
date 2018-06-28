@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AwbStatusRepository extends JpaRepository<AwbStatus, Long> {
+public interface AwbStatusRepository extends JpaRepository<AwbStatus, Long>, JpaSpecificationExecutor<AwbStatus> {
 
 }

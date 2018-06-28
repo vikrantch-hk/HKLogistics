@@ -5,6 +5,8 @@ import com.hk.logistics.service.ZoneService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.ZoneDTO;
+import com.hk.logistics.service.dto.ZoneCriteria;
+import com.hk.logistics.service.ZoneQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,11 @@ public class ZoneResource {
 
     private final ZoneService zoneService;
 
-    public ZoneResource(ZoneService zoneService) {
+    private final ZoneQueryService zoneQueryService;
+
+    public ZoneResource(ZoneService zoneService, ZoneQueryService zoneQueryService) {
         this.zoneService = zoneService;
+        this.zoneQueryService = zoneQueryService;
     }
 
     /**
@@ -83,13 +88,15 @@ public class ZoneResource {
     /**
      * GET  /zones : get all the zones.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of zones in body
      */
     @GetMapping("/zones")
     @Timed
-    public List<ZoneDTO> getAllZones() {
-        log.debug("REST request to get all Zones");
-        return zoneService.findAll();
+    public ResponseEntity<List<ZoneDTO>> getAllZones(ZoneCriteria criteria) {
+        log.debug("REST request to get Zones by criteria: {}", criteria);
+        List<ZoneDTO> entityList = zoneQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

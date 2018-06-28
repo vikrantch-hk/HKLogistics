@@ -9,6 +9,8 @@ import com.hk.logistics.service.ProductVariantService;
 import com.hk.logistics.service.dto.ProductVariantDTO;
 import com.hk.logistics.service.mapper.ProductVariantMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.ProductVariantCriteria;
+import com.hk.logistics.service.ProductVariantQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +77,9 @@ public class ProductVariantResourceIntTest {
     private ProductVariantSearchRepository mockProductVariantSearchRepository;
 
     @Autowired
+    private ProductVariantQueryService productVariantQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -93,7 +98,7 @@ public class ProductVariantResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ProductVariantResource productVariantResource = new ProductVariantResource(productVariantService);
+        final ProductVariantResource productVariantResource = new ProductVariantResource(productVariantService, productVariantQueryService);
         this.restProductVariantMockMvc = MockMvcBuilders.standaloneSetup(productVariantResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -218,6 +223,147 @@ public class ProductVariantResourceIntTest {
             .andExpect(jsonPath("$.serviceable").value(DEFAULT_SERVICEABLE.booleanValue()))
             .andExpect(jsonPath("$.pincode").value(DEFAULT_PINCODE.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByVariantIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where variantId equals to DEFAULT_VARIANT_ID
+        defaultProductVariantShouldBeFound("variantId.equals=" + DEFAULT_VARIANT_ID);
+
+        // Get all the productVariantList where variantId equals to UPDATED_VARIANT_ID
+        defaultProductVariantShouldNotBeFound("variantId.equals=" + UPDATED_VARIANT_ID);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByVariantIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where variantId in DEFAULT_VARIANT_ID or UPDATED_VARIANT_ID
+        defaultProductVariantShouldBeFound("variantId.in=" + DEFAULT_VARIANT_ID + "," + UPDATED_VARIANT_ID);
+
+        // Get all the productVariantList where variantId equals to UPDATED_VARIANT_ID
+        defaultProductVariantShouldNotBeFound("variantId.in=" + UPDATED_VARIANT_ID);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByVariantIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where variantId is not null
+        defaultProductVariantShouldBeFound("variantId.specified=true");
+
+        // Get all the productVariantList where variantId is null
+        defaultProductVariantShouldNotBeFound("variantId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByServiceableIsEqualToSomething() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where serviceable equals to DEFAULT_SERVICEABLE
+        defaultProductVariantShouldBeFound("serviceable.equals=" + DEFAULT_SERVICEABLE);
+
+        // Get all the productVariantList where serviceable equals to UPDATED_SERVICEABLE
+        defaultProductVariantShouldNotBeFound("serviceable.equals=" + UPDATED_SERVICEABLE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByServiceableIsInShouldWork() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where serviceable in DEFAULT_SERVICEABLE or UPDATED_SERVICEABLE
+        defaultProductVariantShouldBeFound("serviceable.in=" + DEFAULT_SERVICEABLE + "," + UPDATED_SERVICEABLE);
+
+        // Get all the productVariantList where serviceable equals to UPDATED_SERVICEABLE
+        defaultProductVariantShouldNotBeFound("serviceable.in=" + UPDATED_SERVICEABLE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByServiceableIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where serviceable is not null
+        defaultProductVariantShouldBeFound("serviceable.specified=true");
+
+        // Get all the productVariantList where serviceable is null
+        defaultProductVariantShouldNotBeFound("serviceable.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByPincodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where pincode equals to DEFAULT_PINCODE
+        defaultProductVariantShouldBeFound("pincode.equals=" + DEFAULT_PINCODE);
+
+        // Get all the productVariantList where pincode equals to UPDATED_PINCODE
+        defaultProductVariantShouldNotBeFound("pincode.equals=" + UPDATED_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByPincodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where pincode in DEFAULT_PINCODE or UPDATED_PINCODE
+        defaultProductVariantShouldBeFound("pincode.in=" + DEFAULT_PINCODE + "," + UPDATED_PINCODE);
+
+        // Get all the productVariantList where pincode equals to UPDATED_PINCODE
+        defaultProductVariantShouldNotBeFound("pincode.in=" + UPDATED_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllProductVariantsByPincodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        productVariantRepository.saveAndFlush(productVariant);
+
+        // Get all the productVariantList where pincode is not null
+        defaultProductVariantShouldBeFound("pincode.specified=true");
+
+        // Get all the productVariantList where pincode is null
+        defaultProductVariantShouldNotBeFound("pincode.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultProductVariantShouldBeFound(String filter) throws Exception {
+        restProductVariantMockMvc.perform(get("/api/product-variants?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(productVariant.getId().intValue())))
+            .andExpect(jsonPath("$.[*].variantId").value(hasItem(DEFAULT_VARIANT_ID.toString())))
+            .andExpect(jsonPath("$.[*].serviceable").value(hasItem(DEFAULT_SERVICEABLE.booleanValue())))
+            .andExpect(jsonPath("$.[*].pincode").value(hasItem(DEFAULT_PINCODE.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultProductVariantShouldNotBeFound(String filter) throws Exception {
+        restProductVariantMockMvc.perform(get("/api/product-variants?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingProductVariant() throws Exception {

@@ -28,13 +28,7 @@ public interface CourierService {
      */
     Page<CourierDTO> findAll(Pageable pageable);
 
-    /**
-     * Get all the Courier with eager load of many-to-many relationships.
-     *
-     * @return the list of entities
-     */
-    Page<CourierDTO> findAllWithEagerRelationships(Pageable pageable);
-    
+
     /**
      * Get the "id" courier.
      *

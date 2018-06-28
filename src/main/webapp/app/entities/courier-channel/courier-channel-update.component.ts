@@ -8,8 +8,6 @@ import { ICourierChannel } from 'app/shared/model/courier-channel.model';
 import { CourierChannelService } from './courier-channel.service';
 import { IChannel } from 'app/shared/model/channel.model';
 import { ChannelService } from 'app/entities/channel';
-import { ICourier } from 'app/shared/model/courier.model';
-import { CourierService } from 'app/entities/courier';
 
 @Component({
     selector: 'jhi-courier-channel-update',
@@ -21,13 +19,10 @@ export class CourierChannelUpdateComponent implements OnInit {
 
     channels: IChannel[];
 
-    couriers: ICourier[];
-
     constructor(
         private jhiAlertService: JhiAlertService,
         private courierChannelService: CourierChannelService,
         private channelService: ChannelService,
-        private courierService: CourierService,
         private activatedRoute: ActivatedRoute
     ) {}
 
@@ -39,12 +34,6 @@ export class CourierChannelUpdateComponent implements OnInit {
         this.channelService.query().subscribe(
             (res: HttpResponse<IChannel[]>) => {
                 this.channels = res.body;
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-        );
-        this.courierService.query().subscribe(
-            (res: HttpResponse<ICourier[]>) => {
-                this.couriers = res.body;
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
@@ -81,10 +70,6 @@ export class CourierChannelUpdateComponent implements OnInit {
     }
 
     trackChannelById(index: number, item: IChannel) {
-        return item.id;
-    }
-
-    trackCourierById(index: number, item: ICourier) {
         return item.id;
     }
     get courierChannel() {

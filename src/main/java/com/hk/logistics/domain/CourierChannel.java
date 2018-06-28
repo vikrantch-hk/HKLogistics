@@ -42,11 +42,9 @@ public class CourierChannel implements Serializable {
     private Set<VendorWHCourierMapping> vendorWHCourierMappings = new HashSet<>();
 
     @ManyToOne
-    @JsonIgnoreProperties("courierChannels")
     private Channel channel;
 
     @ManyToOne
-    @JsonIgnoreProperties("courierChannels")
     private Courier courier;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove

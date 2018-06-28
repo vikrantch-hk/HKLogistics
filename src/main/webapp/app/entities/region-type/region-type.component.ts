@@ -7,7 +7,6 @@ import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
 import { IRegionType } from 'app/shared/model/region-type.model';
 import { Principal } from 'app/core';
 import { RegionTypeService } from './region-type.service';
-import * as XLSX from 'xlsx';
 
 @Component({
     selector: 'jhi-region-type',
@@ -17,7 +16,8 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
     regionTypes: IRegionType[];
     currentAccount: any;
     eventSubscriber: Subscription;
-    currentSearch: string;
+    currentSearchPriority: string;
+    currentSearchName: string;
 
     constructor(
         private regionTypeService: RegionTypeService,
@@ -26,74 +26,77 @@ export class RegionTypeComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private principal: Principal
     ) {
-        this.currentSearch =
-            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
-                ? this.activatedRoute.snapshot.params['search']
+        this.currentSearchPriority =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['searchPriority']
+                ? this.activatedRoute.snapshot.params['searchPriority']
+                : '';
+        this.currentSearchName =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['searchName']
+                ? this.activatedRoute.snapshot.params['searchName']
                 : '';
     }
 
     loadAll() {
-        if (this.currentSearch) {
+        if (this.currentSearchPriority) {
             this.regionTypeService
-                .search({
-                    query: this.currentSearch
+                .searchPriority({
+                    query: this.currentSearchPriority
                 })
                 .subscribe(
                     (res: HttpResponse<IRegionType[]>) => (this.regionTypes = res.body),
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
+                this.currentSearchName = '';
+            return;
+        }
+        if (this.currentSearchName) {
+            this.regionTypeService
+                .searchName({
+                    query: this.currentSearchName
+                })
+                .subscribe(
+                    (res: HttpResponse<IRegionType[]>) => (this.regionTypes = res.body),
+                    (res: HttpErrorResponse) => this.onError(res.message)
+                );
+                this.currentSearchPriority = '';
             return;
         }
         this.regionTypeService.query().subscribe(
             (res: HttpResponse<IRegionType[]>) => {
                 this.regionTypes = res.body;
-                this.currentSearch = '';
+                this.currentSearchPriority = '';
+                this.currentSearchName = '';
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
     }
 
-    search(query) {
+    searchPriority(query) {
         if (!query) {
-            return this.clear();
+            return this.clearPriority();
         }
-        this.currentSearch = query;
+        console.log('hii');
+        this.currentSearchPriority = query;
         this.loadAll();
     }
 
-    clear() {
-        this.currentSearch = '';
+    clearPriority() {
+        this.currentSearchPriority = '';
         this.loadAll();
     }
 
-    upload(event) {
-        const elem = event.target;
-        if (elem.files.length > 0) {
-          const fileSelected: File = elem.files[0];
-          if (fileSelected.name.substring(fileSelected.name.lastIndexOf('.')) !== '.xlsx') {
-            return this.jhiAlertService.error('Please upload .xlsx file!', null, null);
-          }
-          this.regionTypeService.uploadFile(fileSelected)
-             .subscribe( response => {
-          console.log('set any success actions...');
-          this.jhiAlertService.success('uploaded file please refresh after sometime', null, null);
-         // this.loadAll();
-          return response;
-    }.
-     error => {
-       console.log(error.message);
-       this.jhiAlertService.error(error.statusText, null, null);
-     });
-        event.target.value = null;
+    searchName(query) {
+        if (!query) {
+            return this.clearName();
         }
+        console.log('hii');
+        this.currentSearchName = query;
+        this.loadAll();
     }
 
-    ExportToExcel() {
-      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.regionTypes);
-      const wb: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-      /* save to file */
-      XLSX.writeFile(wb, 'ExportSheet.xlsx');
+    clearName() {
+        this.currentSearchName = '';
+        this.loadAll();
     }
 
     ngOnInit() {

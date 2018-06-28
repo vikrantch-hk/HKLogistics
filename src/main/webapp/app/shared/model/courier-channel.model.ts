@@ -1,4 +1,5 @@
 import { IVendorWHCourierMapping } from 'app/shared/model//vendor-wh-courier-mapping.model';
+import { ICourier } from 'app/shared/model//courier.model';
 
 export interface ICourierChannel {
     id?: number;
@@ -8,8 +9,7 @@ export interface ICourierChannel {
     vendorWHCourierMappings?: IVendorWHCourierMapping[];
     channelName?: string;
     channelId?: number;
-    courierName?: string;
-    courierId?: number;
+    couriers?: ICourier[];
 }
 
 export class CourierChannel implements ICourierChannel {
@@ -21,7 +21,6 @@ export class CourierChannel implements ICourierChannel {
         public vendorWHCourierMappings?: IVendorWHCourierMapping[],
         public channelName?: string,
         public channelId?: number,
-        public courierName?: string,
-        public courierId?: number
+        public couriers?: ICourier[]
     ) {}
 }

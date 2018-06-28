@@ -5,6 +5,8 @@ import com.hk.logistics.service.AwbStatusService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.AwbStatusDTO;
+import com.hk.logistics.service.dto.AwbStatusCriteria;
+import com.hk.logistics.service.AwbStatusQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +35,11 @@ public class AwbStatusResource {
 
     private final AwbStatusService awbStatusService;
 
-    public AwbStatusResource(AwbStatusService awbStatusService) {
+    private final AwbStatusQueryService awbStatusQueryService;
+
+    public AwbStatusResource(AwbStatusService awbStatusService, AwbStatusQueryService awbStatusQueryService) {
         this.awbStatusService = awbStatusService;
+        this.awbStatusQueryService = awbStatusQueryService;
     }
 
     /**
@@ -82,13 +87,15 @@ public class AwbStatusResource {
     /**
      * GET  /awb-statuses : get all the awbStatuses.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of awbStatuses in body
      */
     @GetMapping("/awb-statuses")
     @Timed
-    public List<AwbStatusDTO> getAllAwbStatuses() {
-        log.debug("REST request to get all AwbStatuses");
-        return awbStatusService.findAll();
+    public ResponseEntity<List<AwbStatusDTO>> getAllAwbStatuses(AwbStatusCriteria criteria) {
+        log.debug("REST request to get AwbStatuses by criteria: {}", criteria);
+        List<AwbStatusDTO> entityList = awbStatusQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

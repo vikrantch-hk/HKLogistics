@@ -3,12 +3,16 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.CourierPricingEngine;
+import com.hk.logistics.domain.Courier;
+import com.hk.logistics.domain.RegionType;
 import com.hk.logistics.repository.CourierPricingEngineRepository;
 import com.hk.logistics.repository.search.CourierPricingEngineSearchRepository;
 import com.hk.logistics.service.CourierPricingEngineService;
 import com.hk.logistics.service.dto.CourierPricingEngineDTO;
 import com.hk.logistics.service.mapper.CourierPricingEngineMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CourierPricingEngineCriteria;
+import com.hk.logistics.service.CourierPricingEngineQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -104,6 +108,9 @@ public class CourierPricingEngineResourceIntTest {
     private CourierPricingEngineSearchRepository mockCourierPricingEngineSearchRepository;
 
     @Autowired
+    private CourierPricingEngineQueryService courierPricingEngineQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -122,7 +129,7 @@ public class CourierPricingEngineResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CourierPricingEngineResource courierPricingEngineResource = new CourierPricingEngineResource(courierPricingEngineService);
+        final CourierPricingEngineResource courierPricingEngineResource = new CourierPricingEngineResource(courierPricingEngineService, courierPricingEngineQueryService);
         this.restCourierPricingEngineMockMvc = MockMvcBuilders.standaloneSetup(courierPricingEngineResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -340,6 +347,572 @@ public class CourierPricingEngineResourceIntTest {
             .andExpect(jsonPath("$.validUpto").value(DEFAULT_VALID_UPTO.toString()))
             .andExpect(jsonPath("$.costParameters").value(DEFAULT_COST_PARAMETERS.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseWtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseWt equals to DEFAULT_FIRST_BASE_WT
+        defaultCourierPricingEngineShouldBeFound("firstBaseWt.equals=" + DEFAULT_FIRST_BASE_WT);
+
+        // Get all the courierPricingEngineList where firstBaseWt equals to UPDATED_FIRST_BASE_WT
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseWt.equals=" + UPDATED_FIRST_BASE_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseWtIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseWt in DEFAULT_FIRST_BASE_WT or UPDATED_FIRST_BASE_WT
+        defaultCourierPricingEngineShouldBeFound("firstBaseWt.in=" + DEFAULT_FIRST_BASE_WT + "," + UPDATED_FIRST_BASE_WT);
+
+        // Get all the courierPricingEngineList where firstBaseWt equals to UPDATED_FIRST_BASE_WT
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseWt.in=" + UPDATED_FIRST_BASE_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseWtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseWt is not null
+        defaultCourierPricingEngineShouldBeFound("firstBaseWt.specified=true");
+
+        // Get all the courierPricingEngineList where firstBaseWt is null
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseWt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseCostIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseCost equals to DEFAULT_FIRST_BASE_COST
+        defaultCourierPricingEngineShouldBeFound("firstBaseCost.equals=" + DEFAULT_FIRST_BASE_COST);
+
+        // Get all the courierPricingEngineList where firstBaseCost equals to UPDATED_FIRST_BASE_COST
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseCost.equals=" + UPDATED_FIRST_BASE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseCostIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseCost in DEFAULT_FIRST_BASE_COST or UPDATED_FIRST_BASE_COST
+        defaultCourierPricingEngineShouldBeFound("firstBaseCost.in=" + DEFAULT_FIRST_BASE_COST + "," + UPDATED_FIRST_BASE_COST);
+
+        // Get all the courierPricingEngineList where firstBaseCost equals to UPDATED_FIRST_BASE_COST
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseCost.in=" + UPDATED_FIRST_BASE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFirstBaseCostIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where firstBaseCost is not null
+        defaultCourierPricingEngineShouldBeFound("firstBaseCost.specified=true");
+
+        // Get all the courierPricingEngineList where firstBaseCost is null
+        defaultCourierPricingEngineShouldNotBeFound("firstBaseCost.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseWtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseWt equals to DEFAULT_SECOND_BASE_WT
+        defaultCourierPricingEngineShouldBeFound("secondBaseWt.equals=" + DEFAULT_SECOND_BASE_WT);
+
+        // Get all the courierPricingEngineList where secondBaseWt equals to UPDATED_SECOND_BASE_WT
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseWt.equals=" + UPDATED_SECOND_BASE_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseWtIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseWt in DEFAULT_SECOND_BASE_WT or UPDATED_SECOND_BASE_WT
+        defaultCourierPricingEngineShouldBeFound("secondBaseWt.in=" + DEFAULT_SECOND_BASE_WT + "," + UPDATED_SECOND_BASE_WT);
+
+        // Get all the courierPricingEngineList where secondBaseWt equals to UPDATED_SECOND_BASE_WT
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseWt.in=" + UPDATED_SECOND_BASE_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseWtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseWt is not null
+        defaultCourierPricingEngineShouldBeFound("secondBaseWt.specified=true");
+
+        // Get all the courierPricingEngineList where secondBaseWt is null
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseWt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseCostIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseCost equals to DEFAULT_SECOND_BASE_COST
+        defaultCourierPricingEngineShouldBeFound("secondBaseCost.equals=" + DEFAULT_SECOND_BASE_COST);
+
+        // Get all the courierPricingEngineList where secondBaseCost equals to UPDATED_SECOND_BASE_COST
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseCost.equals=" + UPDATED_SECOND_BASE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseCostIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseCost in DEFAULT_SECOND_BASE_COST or UPDATED_SECOND_BASE_COST
+        defaultCourierPricingEngineShouldBeFound("secondBaseCost.in=" + DEFAULT_SECOND_BASE_COST + "," + UPDATED_SECOND_BASE_COST);
+
+        // Get all the courierPricingEngineList where secondBaseCost equals to UPDATED_SECOND_BASE_COST
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseCost.in=" + UPDATED_SECOND_BASE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesBySecondBaseCostIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where secondBaseCost is not null
+        defaultCourierPricingEngineShouldBeFound("secondBaseCost.specified=true");
+
+        // Get all the courierPricingEngineList where secondBaseCost is null
+        defaultCourierPricingEngineShouldNotBeFound("secondBaseCost.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalWtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalWt equals to DEFAULT_ADDITIONAL_WT
+        defaultCourierPricingEngineShouldBeFound("additionalWt.equals=" + DEFAULT_ADDITIONAL_WT);
+
+        // Get all the courierPricingEngineList where additionalWt equals to UPDATED_ADDITIONAL_WT
+        defaultCourierPricingEngineShouldNotBeFound("additionalWt.equals=" + UPDATED_ADDITIONAL_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalWtIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalWt in DEFAULT_ADDITIONAL_WT or UPDATED_ADDITIONAL_WT
+        defaultCourierPricingEngineShouldBeFound("additionalWt.in=" + DEFAULT_ADDITIONAL_WT + "," + UPDATED_ADDITIONAL_WT);
+
+        // Get all the courierPricingEngineList where additionalWt equals to UPDATED_ADDITIONAL_WT
+        defaultCourierPricingEngineShouldNotBeFound("additionalWt.in=" + UPDATED_ADDITIONAL_WT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalWtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalWt is not null
+        defaultCourierPricingEngineShouldBeFound("additionalWt.specified=true");
+
+        // Get all the courierPricingEngineList where additionalWt is null
+        defaultCourierPricingEngineShouldNotBeFound("additionalWt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalCostIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalCost equals to DEFAULT_ADDITIONAL_COST
+        defaultCourierPricingEngineShouldBeFound("additionalCost.equals=" + DEFAULT_ADDITIONAL_COST);
+
+        // Get all the courierPricingEngineList where additionalCost equals to UPDATED_ADDITIONAL_COST
+        defaultCourierPricingEngineShouldNotBeFound("additionalCost.equals=" + UPDATED_ADDITIONAL_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalCostIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalCost in DEFAULT_ADDITIONAL_COST or UPDATED_ADDITIONAL_COST
+        defaultCourierPricingEngineShouldBeFound("additionalCost.in=" + DEFAULT_ADDITIONAL_COST + "," + UPDATED_ADDITIONAL_COST);
+
+        // Get all the courierPricingEngineList where additionalCost equals to UPDATED_ADDITIONAL_COST
+        defaultCourierPricingEngineShouldNotBeFound("additionalCost.in=" + UPDATED_ADDITIONAL_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByAdditionalCostIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where additionalCost is not null
+        defaultCourierPricingEngineShouldBeFound("additionalCost.specified=true");
+
+        // Get all the courierPricingEngineList where additionalCost is null
+        defaultCourierPricingEngineShouldNotBeFound("additionalCost.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFuelSurchargeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where fuelSurcharge equals to DEFAULT_FUEL_SURCHARGE
+        defaultCourierPricingEngineShouldBeFound("fuelSurcharge.equals=" + DEFAULT_FUEL_SURCHARGE);
+
+        // Get all the courierPricingEngineList where fuelSurcharge equals to UPDATED_FUEL_SURCHARGE
+        defaultCourierPricingEngineShouldNotBeFound("fuelSurcharge.equals=" + UPDATED_FUEL_SURCHARGE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFuelSurchargeIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where fuelSurcharge in DEFAULT_FUEL_SURCHARGE or UPDATED_FUEL_SURCHARGE
+        defaultCourierPricingEngineShouldBeFound("fuelSurcharge.in=" + DEFAULT_FUEL_SURCHARGE + "," + UPDATED_FUEL_SURCHARGE);
+
+        // Get all the courierPricingEngineList where fuelSurcharge equals to UPDATED_FUEL_SURCHARGE
+        defaultCourierPricingEngineShouldNotBeFound("fuelSurcharge.in=" + UPDATED_FUEL_SURCHARGE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByFuelSurchargeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where fuelSurcharge is not null
+        defaultCourierPricingEngineShouldBeFound("fuelSurcharge.specified=true");
+
+        // Get all the courierPricingEngineList where fuelSurcharge is null
+        defaultCourierPricingEngineShouldNotBeFound("fuelSurcharge.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByMinCodChargesIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where minCodCharges equals to DEFAULT_MIN_COD_CHARGES
+        defaultCourierPricingEngineShouldBeFound("minCodCharges.equals=" + DEFAULT_MIN_COD_CHARGES);
+
+        // Get all the courierPricingEngineList where minCodCharges equals to UPDATED_MIN_COD_CHARGES
+        defaultCourierPricingEngineShouldNotBeFound("minCodCharges.equals=" + UPDATED_MIN_COD_CHARGES);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByMinCodChargesIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where minCodCharges in DEFAULT_MIN_COD_CHARGES or UPDATED_MIN_COD_CHARGES
+        defaultCourierPricingEngineShouldBeFound("minCodCharges.in=" + DEFAULT_MIN_COD_CHARGES + "," + UPDATED_MIN_COD_CHARGES);
+
+        // Get all the courierPricingEngineList where minCodCharges equals to UPDATED_MIN_COD_CHARGES
+        defaultCourierPricingEngineShouldNotBeFound("minCodCharges.in=" + UPDATED_MIN_COD_CHARGES);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByMinCodChargesIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where minCodCharges is not null
+        defaultCourierPricingEngineShouldBeFound("minCodCharges.specified=true");
+
+        // Get all the courierPricingEngineList where minCodCharges is null
+        defaultCourierPricingEngineShouldNotBeFound("minCodCharges.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCodCutoffAmountIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where codCutoffAmount equals to DEFAULT_COD_CUTOFF_AMOUNT
+        defaultCourierPricingEngineShouldBeFound("codCutoffAmount.equals=" + DEFAULT_COD_CUTOFF_AMOUNT);
+
+        // Get all the courierPricingEngineList where codCutoffAmount equals to UPDATED_COD_CUTOFF_AMOUNT
+        defaultCourierPricingEngineShouldNotBeFound("codCutoffAmount.equals=" + UPDATED_COD_CUTOFF_AMOUNT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCodCutoffAmountIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where codCutoffAmount in DEFAULT_COD_CUTOFF_AMOUNT or UPDATED_COD_CUTOFF_AMOUNT
+        defaultCourierPricingEngineShouldBeFound("codCutoffAmount.in=" + DEFAULT_COD_CUTOFF_AMOUNT + "," + UPDATED_COD_CUTOFF_AMOUNT);
+
+        // Get all the courierPricingEngineList where codCutoffAmount equals to UPDATED_COD_CUTOFF_AMOUNT
+        defaultCourierPricingEngineShouldNotBeFound("codCutoffAmount.in=" + UPDATED_COD_CUTOFF_AMOUNT);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCodCutoffAmountIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where codCutoffAmount is not null
+        defaultCourierPricingEngineShouldBeFound("codCutoffAmount.specified=true");
+
+        // Get all the courierPricingEngineList where codCutoffAmount is null
+        defaultCourierPricingEngineShouldNotBeFound("codCutoffAmount.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByVariableCodChargesIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where variableCodCharges equals to DEFAULT_VARIABLE_COD_CHARGES
+        defaultCourierPricingEngineShouldBeFound("variableCodCharges.equals=" + DEFAULT_VARIABLE_COD_CHARGES);
+
+        // Get all the courierPricingEngineList where variableCodCharges equals to UPDATED_VARIABLE_COD_CHARGES
+        defaultCourierPricingEngineShouldNotBeFound("variableCodCharges.equals=" + UPDATED_VARIABLE_COD_CHARGES);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByVariableCodChargesIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where variableCodCharges in DEFAULT_VARIABLE_COD_CHARGES or UPDATED_VARIABLE_COD_CHARGES
+        defaultCourierPricingEngineShouldBeFound("variableCodCharges.in=" + DEFAULT_VARIABLE_COD_CHARGES + "," + UPDATED_VARIABLE_COD_CHARGES);
+
+        // Get all the courierPricingEngineList where variableCodCharges equals to UPDATED_VARIABLE_COD_CHARGES
+        defaultCourierPricingEngineShouldNotBeFound("variableCodCharges.in=" + UPDATED_VARIABLE_COD_CHARGES);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByVariableCodChargesIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where variableCodCharges is not null
+        defaultCourierPricingEngineShouldBeFound("variableCodCharges.specified=true");
+
+        // Get all the courierPricingEngineList where variableCodCharges is null
+        defaultCourierPricingEngineShouldNotBeFound("variableCodCharges.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByValidUptoIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where validUpto equals to DEFAULT_VALID_UPTO
+        defaultCourierPricingEngineShouldBeFound("validUpto.equals=" + DEFAULT_VALID_UPTO);
+
+        // Get all the courierPricingEngineList where validUpto equals to UPDATED_VALID_UPTO
+        defaultCourierPricingEngineShouldNotBeFound("validUpto.equals=" + UPDATED_VALID_UPTO);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByValidUptoIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where validUpto in DEFAULT_VALID_UPTO or UPDATED_VALID_UPTO
+        defaultCourierPricingEngineShouldBeFound("validUpto.in=" + DEFAULT_VALID_UPTO + "," + UPDATED_VALID_UPTO);
+
+        // Get all the courierPricingEngineList where validUpto equals to UPDATED_VALID_UPTO
+        defaultCourierPricingEngineShouldNotBeFound("validUpto.in=" + UPDATED_VALID_UPTO);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByValidUptoIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where validUpto is not null
+        defaultCourierPricingEngineShouldBeFound("validUpto.specified=true");
+
+        // Get all the courierPricingEngineList where validUpto is null
+        defaultCourierPricingEngineShouldNotBeFound("validUpto.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByValidUptoIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where validUpto greater than or equals to DEFAULT_VALID_UPTO
+        defaultCourierPricingEngineShouldBeFound("validUpto.greaterOrEqualThan=" + DEFAULT_VALID_UPTO);
+
+        // Get all the courierPricingEngineList where validUpto greater than or equals to UPDATED_VALID_UPTO
+        defaultCourierPricingEngineShouldNotBeFound("validUpto.greaterOrEqualThan=" + UPDATED_VALID_UPTO);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByValidUptoIsLessThanSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where validUpto less than or equals to DEFAULT_VALID_UPTO
+        defaultCourierPricingEngineShouldNotBeFound("validUpto.lessThan=" + DEFAULT_VALID_UPTO);
+
+        // Get all the courierPricingEngineList where validUpto less than or equals to UPDATED_VALID_UPTO
+        defaultCourierPricingEngineShouldBeFound("validUpto.lessThan=" + UPDATED_VALID_UPTO);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCostParametersIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where costParameters equals to DEFAULT_COST_PARAMETERS
+        defaultCourierPricingEngineShouldBeFound("costParameters.equals=" + DEFAULT_COST_PARAMETERS);
+
+        // Get all the courierPricingEngineList where costParameters equals to UPDATED_COST_PARAMETERS
+        defaultCourierPricingEngineShouldNotBeFound("costParameters.equals=" + UPDATED_COST_PARAMETERS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCostParametersIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where costParameters in DEFAULT_COST_PARAMETERS or UPDATED_COST_PARAMETERS
+        defaultCourierPricingEngineShouldBeFound("costParameters.in=" + DEFAULT_COST_PARAMETERS + "," + UPDATED_COST_PARAMETERS);
+
+        // Get all the courierPricingEngineList where costParameters equals to UPDATED_COST_PARAMETERS
+        defaultCourierPricingEngineShouldNotBeFound("costParameters.in=" + UPDATED_COST_PARAMETERS);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCostParametersIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+
+        // Get all the courierPricingEngineList where costParameters is not null
+        defaultCourierPricingEngineShouldBeFound("costParameters.specified=true");
+
+        // Get all the courierPricingEngineList where costParameters is null
+        defaultCourierPricingEngineShouldNotBeFound("costParameters.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Courier courier = CourierResourceIntTest.createEntity(em);
+        em.persist(courier);
+        em.flush();
+        courierPricingEngine.setCourier(courier);
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+        Long courierId = courier.getId();
+
+        // Get all the courierPricingEngineList where courier equals to courierId
+        defaultCourierPricingEngineShouldBeFound("courierId.equals=" + courierId);
+
+        // Get all the courierPricingEngineList where courier equals to courierId + 1
+        defaultCourierPricingEngineShouldNotBeFound("courierId.equals=" + (courierId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCourierPricingEnginesByRegionTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        RegionType regionType = RegionTypeResourceIntTest.createEntity(em);
+        em.persist(regionType);
+        em.flush();
+        courierPricingEngine.setRegionType(regionType);
+        courierPricingEngineRepository.saveAndFlush(courierPricingEngine);
+        Long regionTypeId = regionType.getId();
+
+        // Get all the courierPricingEngineList where regionType equals to regionTypeId
+        defaultCourierPricingEngineShouldBeFound("regionTypeId.equals=" + regionTypeId);
+
+        // Get all the courierPricingEngineList where regionType equals to regionTypeId + 1
+        defaultCourierPricingEngineShouldNotBeFound("regionTypeId.equals=" + (regionTypeId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCourierPricingEngineShouldBeFound(String filter) throws Exception {
+        restCourierPricingEngineMockMvc.perform(get("/api/courier-pricing-engines?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(courierPricingEngine.getId().intValue())))
+            .andExpect(jsonPath("$.[*].firstBaseWt").value(hasItem(DEFAULT_FIRST_BASE_WT.doubleValue())))
+            .andExpect(jsonPath("$.[*].firstBaseCost").value(hasItem(DEFAULT_FIRST_BASE_COST.doubleValue())))
+            .andExpect(jsonPath("$.[*].secondBaseWt").value(hasItem(DEFAULT_SECOND_BASE_WT.doubleValue())))
+            .andExpect(jsonPath("$.[*].secondBaseCost").value(hasItem(DEFAULT_SECOND_BASE_COST.doubleValue())))
+            .andExpect(jsonPath("$.[*].additionalWt").value(hasItem(DEFAULT_ADDITIONAL_WT.doubleValue())))
+            .andExpect(jsonPath("$.[*].additionalCost").value(hasItem(DEFAULT_ADDITIONAL_COST.doubleValue())))
+            .andExpect(jsonPath("$.[*].fuelSurcharge").value(hasItem(DEFAULT_FUEL_SURCHARGE.doubleValue())))
+            .andExpect(jsonPath("$.[*].minCodCharges").value(hasItem(DEFAULT_MIN_COD_CHARGES.doubleValue())))
+            .andExpect(jsonPath("$.[*].codCutoffAmount").value(hasItem(DEFAULT_COD_CUTOFF_AMOUNT.doubleValue())))
+            .andExpect(jsonPath("$.[*].variableCodCharges").value(hasItem(DEFAULT_VARIABLE_COD_CHARGES.doubleValue())))
+            .andExpect(jsonPath("$.[*].validUpto").value(hasItem(DEFAULT_VALID_UPTO.toString())))
+            .andExpect(jsonPath("$.[*].costParameters").value(hasItem(DEFAULT_COST_PARAMETERS.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCourierPricingEngineShouldNotBeFound(String filter) throws Exception {
+        restCourierPricingEngineMockMvc.perform(get("/api/courier-pricing-engines?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCourierPricingEngine() throws Exception {

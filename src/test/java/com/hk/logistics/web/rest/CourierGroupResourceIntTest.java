@@ -3,12 +3,15 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.CourierGroup;
+import com.hk.logistics.domain.Courier;
 import com.hk.logistics.repository.CourierGroupRepository;
 import com.hk.logistics.repository.search.CourierGroupSearchRepository;
 import com.hk.logistics.service.CourierGroupService;
 import com.hk.logistics.service.dto.CourierGroupDTO;
 import com.hk.logistics.service.mapper.CourierGroupMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CourierGroupCriteria;
+import com.hk.logistics.service.CourierGroupQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +72,9 @@ public class CourierGroupResourceIntTest {
     private CourierGroupSearchRepository mockCourierGroupSearchRepository;
 
     @Autowired
+    private CourierGroupQueryService courierGroupQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -87,7 +93,7 @@ public class CourierGroupResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CourierGroupResource courierGroupResource = new CourierGroupResource(courierGroupService);
+        final CourierGroupResource courierGroupResource = new CourierGroupResource(courierGroupService, courierGroupQueryService);
         this.restCourierGroupMockMvc = MockMvcBuilders.standaloneSetup(courierGroupResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -185,6 +191,86 @@ public class CourierGroupResourceIntTest {
             .andExpect(jsonPath("$.id").value(courierGroup.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCourierGroupsByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierGroupRepository.saveAndFlush(courierGroup);
+
+        // Get all the courierGroupList where name equals to DEFAULT_NAME
+        defaultCourierGroupShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the courierGroupList where name equals to UPDATED_NAME
+        defaultCourierGroupShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierGroupsByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierGroupRepository.saveAndFlush(courierGroup);
+
+        // Get all the courierGroupList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultCourierGroupShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the courierGroupList where name equals to UPDATED_NAME
+        defaultCourierGroupShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierGroupsByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierGroupRepository.saveAndFlush(courierGroup);
+
+        // Get all the courierGroupList where name is not null
+        defaultCourierGroupShouldBeFound("name.specified=true");
+
+        // Get all the courierGroupList where name is null
+        defaultCourierGroupShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCourierGroupsByCourierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Courier courier = CourierResourceIntTest.createEntity(em);
+        em.persist(courier);
+        em.flush();
+        courierGroup.addCourier(courier);
+        courierGroupRepository.saveAndFlush(courierGroup);
+        Long courierId = courier.getId();
+
+        // Get all the courierGroupList where courier equals to courierId
+        defaultCourierGroupShouldBeFound("courierId.equals=" + courierId);
+
+        // Get all the courierGroupList where courier equals to courierId + 1
+        defaultCourierGroupShouldNotBeFound("courierId.equals=" + (courierId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCourierGroupShouldBeFound(String filter) throws Exception {
+        restCourierGroupMockMvc.perform(get("/api/courier-groups?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(courierGroup.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCourierGroupShouldNotBeFound(String filter) throws Exception {
+        restCourierGroupMockMvc.perform(get("/api/courier-groups?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCourierGroup() throws Exception {

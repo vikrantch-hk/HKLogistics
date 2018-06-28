@@ -10,14 +10,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Document;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A CourierGroup.
@@ -37,8 +35,7 @@ public class CourierGroup implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "courierGroups")
-    @JsonIgnore
+    @OneToMany(mappedBy = "courierGroup")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Courier> couriers = new HashSet<>();
 

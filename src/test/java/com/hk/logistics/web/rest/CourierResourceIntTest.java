@@ -3,17 +3,20 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Courier;
+import com.hk.logistics.domain.CourierGroup;
+import com.hk.logistics.domain.CourierChannel;
 import com.hk.logistics.repository.CourierRepository;
 import com.hk.logistics.repository.search.CourierSearchRepository;
 import com.hk.logistics.service.CourierService;
 import com.hk.logistics.service.dto.CourierDTO;
 import com.hk.logistics.service.mapper.CourierMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.CourierCriteria;
+import com.hk.logistics.service.CourierQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +31,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,14 +78,11 @@ public class CourierResourceIntTest {
 
     @Autowired
     private CourierRepository courierRepository;
-    @Mock
-    private CourierRepository courierRepositoryMock;
+
 
     @Autowired
     private CourierMapper courierMapper;
     
-    @Mock
-    private CourierService courierServiceMock;
 
     @Autowired
     private CourierService courierService;
@@ -95,6 +94,9 @@ public class CourierResourceIntTest {
      */
     @Autowired
     private CourierSearchRepository mockCourierSearchRepository;
+
+    @Autowired
+    private CourierQueryService courierQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -115,7 +117,7 @@ public class CourierResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CourierResource courierResource = new CourierResource(courierService);
+        final CourierResource courierResource = new CourierResource(courierService, courierQueryService);
         this.restCourierMockMvc = MockMvcBuilders.standaloneSetup(courierResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -258,36 +260,6 @@ public class CourierResourceIntTest {
             .andExpect(jsonPath("$.[*].reversePickup").value(hasItem(DEFAULT_REVERSE_PICKUP.booleanValue())));
     }
     
-    public void getAllCouriersWithEagerRelationshipsIsEnabled() throws Exception {
-        CourierResource courierResource = new CourierResource(courierServiceMock);
-        when(courierServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
-
-        MockMvc restCourierMockMvc = MockMvcBuilders.standaloneSetup(courierResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setConversionService(createFormattingConversionService())
-            .setMessageConverters(jacksonMessageConverter).build();
-
-        restCourierMockMvc.perform(get("/api/couriers?eagerload=true"))
-        .andExpect(status().isOk());
-
-        verify(courierServiceMock, times(1)).findAllWithEagerRelationships(any());
-    }
-
-    public void getAllCouriersWithEagerRelationshipsIsNotEnabled() throws Exception {
-        CourierResource courierResource = new CourierResource(courierServiceMock);
-            when(courierServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
-            MockMvc restCourierMockMvc = MockMvcBuilders.standaloneSetup(courierResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setConversionService(createFormattingConversionService())
-            .setMessageConverters(jacksonMessageConverter).build();
-
-        restCourierMockMvc.perform(get("/api/couriers?eagerload=true"))
-        .andExpect(status().isOk());
-
-            verify(courierServiceMock, times(1)).findAllWithEagerRelationships(any());
-    }
 
     @Test
     @Transactional
@@ -309,6 +281,412 @@ public class CourierResourceIntTest {
             .andExpect(jsonPath("$.vendorShipping").value(DEFAULT_VENDOR_SHIPPING.booleanValue()))
             .andExpect(jsonPath("$.reversePickup").value(DEFAULT_REVERSE_PICKUP.booleanValue()));
     }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where name equals to DEFAULT_NAME
+        defaultCourierShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the courierList where name equals to UPDATED_NAME
+        defaultCourierShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultCourierShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the courierList where name equals to UPDATED_NAME
+        defaultCourierShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where name is not null
+        defaultCourierShouldBeFound("name.specified=true");
+
+        // Get all the courierList where name is null
+        defaultCourierShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where active equals to DEFAULT_ACTIVE
+        defaultCourierShouldBeFound("active.equals=" + DEFAULT_ACTIVE);
+
+        // Get all the courierList where active equals to UPDATED_ACTIVE
+        defaultCourierShouldNotBeFound("active.equals=" + UPDATED_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where active in DEFAULT_ACTIVE or UPDATED_ACTIVE
+        defaultCourierShouldBeFound("active.in=" + DEFAULT_ACTIVE + "," + UPDATED_ACTIVE);
+
+        // Get all the courierList where active equals to UPDATED_ACTIVE
+        defaultCourierShouldNotBeFound("active.in=" + UPDATED_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where active is not null
+        defaultCourierShouldBeFound("active.specified=true");
+
+        // Get all the courierList where active is null
+        defaultCourierShouldNotBeFound("active.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingParameterIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingParameter equals to DEFAULT_TRACKING_PARAMETER
+        defaultCourierShouldBeFound("trackingParameter.equals=" + DEFAULT_TRACKING_PARAMETER);
+
+        // Get all the courierList where trackingParameter equals to UPDATED_TRACKING_PARAMETER
+        defaultCourierShouldNotBeFound("trackingParameter.equals=" + UPDATED_TRACKING_PARAMETER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingParameterIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingParameter in DEFAULT_TRACKING_PARAMETER or UPDATED_TRACKING_PARAMETER
+        defaultCourierShouldBeFound("trackingParameter.in=" + DEFAULT_TRACKING_PARAMETER + "," + UPDATED_TRACKING_PARAMETER);
+
+        // Get all the courierList where trackingParameter equals to UPDATED_TRACKING_PARAMETER
+        defaultCourierShouldNotBeFound("trackingParameter.in=" + UPDATED_TRACKING_PARAMETER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingParameterIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingParameter is not null
+        defaultCourierShouldBeFound("trackingParameter.specified=true");
+
+        // Get all the courierList where trackingParameter is null
+        defaultCourierShouldNotBeFound("trackingParameter.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingUrlIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingUrl equals to DEFAULT_TRACKING_URL
+        defaultCourierShouldBeFound("trackingUrl.equals=" + DEFAULT_TRACKING_URL);
+
+        // Get all the courierList where trackingUrl equals to UPDATED_TRACKING_URL
+        defaultCourierShouldNotBeFound("trackingUrl.equals=" + UPDATED_TRACKING_URL);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingUrlIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingUrl in DEFAULT_TRACKING_URL or UPDATED_TRACKING_URL
+        defaultCourierShouldBeFound("trackingUrl.in=" + DEFAULT_TRACKING_URL + "," + UPDATED_TRACKING_URL);
+
+        // Get all the courierList where trackingUrl equals to UPDATED_TRACKING_URL
+        defaultCourierShouldNotBeFound("trackingUrl.in=" + UPDATED_TRACKING_URL);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByTrackingUrlIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where trackingUrl is not null
+        defaultCourierShouldBeFound("trackingUrl.specified=true");
+
+        // Get all the courierList where trackingUrl is null
+        defaultCourierShouldNotBeFound("trackingUrl.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByParentCourierIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where parentCourierId equals to DEFAULT_PARENT_COURIER_ID
+        defaultCourierShouldBeFound("parentCourierId.equals=" + DEFAULT_PARENT_COURIER_ID);
+
+        // Get all the courierList where parentCourierId equals to UPDATED_PARENT_COURIER_ID
+        defaultCourierShouldNotBeFound("parentCourierId.equals=" + UPDATED_PARENT_COURIER_ID);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByParentCourierIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where parentCourierId in DEFAULT_PARENT_COURIER_ID or UPDATED_PARENT_COURIER_ID
+        defaultCourierShouldBeFound("parentCourierId.in=" + DEFAULT_PARENT_COURIER_ID + "," + UPDATED_PARENT_COURIER_ID);
+
+        // Get all the courierList where parentCourierId equals to UPDATED_PARENT_COURIER_ID
+        defaultCourierShouldNotBeFound("parentCourierId.in=" + UPDATED_PARENT_COURIER_ID);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByParentCourierIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where parentCourierId is not null
+        defaultCourierShouldBeFound("parentCourierId.specified=true");
+
+        // Get all the courierList where parentCourierId is null
+        defaultCourierShouldNotBeFound("parentCourierId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByParentCourierIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where parentCourierId greater than or equals to DEFAULT_PARENT_COURIER_ID
+        defaultCourierShouldBeFound("parentCourierId.greaterOrEqualThan=" + DEFAULT_PARENT_COURIER_ID);
+
+        // Get all the courierList where parentCourierId greater than or equals to UPDATED_PARENT_COURIER_ID
+        defaultCourierShouldNotBeFound("parentCourierId.greaterOrEqualThan=" + UPDATED_PARENT_COURIER_ID);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByParentCourierIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where parentCourierId less than or equals to DEFAULT_PARENT_COURIER_ID
+        defaultCourierShouldNotBeFound("parentCourierId.lessThan=" + DEFAULT_PARENT_COURIER_ID);
+
+        // Get all the courierList where parentCourierId less than or equals to UPDATED_PARENT_COURIER_ID
+        defaultCourierShouldBeFound("parentCourierId.lessThan=" + UPDATED_PARENT_COURIER_ID);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCouriersByHkShippingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where hkShipping equals to DEFAULT_HK_SHIPPING
+        defaultCourierShouldBeFound("hkShipping.equals=" + DEFAULT_HK_SHIPPING);
+
+        // Get all the courierList where hkShipping equals to UPDATED_HK_SHIPPING
+        defaultCourierShouldNotBeFound("hkShipping.equals=" + UPDATED_HK_SHIPPING);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByHkShippingIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where hkShipping in DEFAULT_HK_SHIPPING or UPDATED_HK_SHIPPING
+        defaultCourierShouldBeFound("hkShipping.in=" + DEFAULT_HK_SHIPPING + "," + UPDATED_HK_SHIPPING);
+
+        // Get all the courierList where hkShipping equals to UPDATED_HK_SHIPPING
+        defaultCourierShouldNotBeFound("hkShipping.in=" + UPDATED_HK_SHIPPING);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByHkShippingIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where hkShipping is not null
+        defaultCourierShouldBeFound("hkShipping.specified=true");
+
+        // Get all the courierList where hkShipping is null
+        defaultCourierShouldNotBeFound("hkShipping.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByVendorShippingIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where vendorShipping equals to DEFAULT_VENDOR_SHIPPING
+        defaultCourierShouldBeFound("vendorShipping.equals=" + DEFAULT_VENDOR_SHIPPING);
+
+        // Get all the courierList where vendorShipping equals to UPDATED_VENDOR_SHIPPING
+        defaultCourierShouldNotBeFound("vendorShipping.equals=" + UPDATED_VENDOR_SHIPPING);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByVendorShippingIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where vendorShipping in DEFAULT_VENDOR_SHIPPING or UPDATED_VENDOR_SHIPPING
+        defaultCourierShouldBeFound("vendorShipping.in=" + DEFAULT_VENDOR_SHIPPING + "," + UPDATED_VENDOR_SHIPPING);
+
+        // Get all the courierList where vendorShipping equals to UPDATED_VENDOR_SHIPPING
+        defaultCourierShouldNotBeFound("vendorShipping.in=" + UPDATED_VENDOR_SHIPPING);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByVendorShippingIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where vendorShipping is not null
+        defaultCourierShouldBeFound("vendorShipping.specified=true");
+
+        // Get all the courierList where vendorShipping is null
+        defaultCourierShouldNotBeFound("vendorShipping.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByReversePickupIsEqualToSomething() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where reversePickup equals to DEFAULT_REVERSE_PICKUP
+        defaultCourierShouldBeFound("reversePickup.equals=" + DEFAULT_REVERSE_PICKUP);
+
+        // Get all the courierList where reversePickup equals to UPDATED_REVERSE_PICKUP
+        defaultCourierShouldNotBeFound("reversePickup.equals=" + UPDATED_REVERSE_PICKUP);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByReversePickupIsInShouldWork() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where reversePickup in DEFAULT_REVERSE_PICKUP or UPDATED_REVERSE_PICKUP
+        defaultCourierShouldBeFound("reversePickup.in=" + DEFAULT_REVERSE_PICKUP + "," + UPDATED_REVERSE_PICKUP);
+
+        // Get all the courierList where reversePickup equals to UPDATED_REVERSE_PICKUP
+        defaultCourierShouldNotBeFound("reversePickup.in=" + UPDATED_REVERSE_PICKUP);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByReversePickupIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        courierRepository.saveAndFlush(courier);
+
+        // Get all the courierList where reversePickup is not null
+        defaultCourierShouldBeFound("reversePickup.specified=true");
+
+        // Get all the courierList where reversePickup is null
+        defaultCourierShouldNotBeFound("reversePickup.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCouriersByCourierGroupIsEqualToSomething() throws Exception {
+        // Initialize the database
+        CourierGroup courierGroup = CourierGroupResourceIntTest.createEntity(em);
+        em.persist(courierGroup);
+        em.flush();
+        courier.setCourierGroup(courierGroup);
+        courierRepository.saveAndFlush(courier);
+        Long courierGroupId = courierGroup.getId();
+
+        // Get all the courierList where courierGroup equals to courierGroupId
+        defaultCourierShouldBeFound("courierGroupId.equals=" + courierGroupId);
+
+        // Get all the courierList where courierGroup equals to courierGroupId + 1
+        defaultCourierShouldNotBeFound("courierGroupId.equals=" + (courierGroupId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCouriersByCourierChannelIsEqualToSomething() throws Exception {
+        // Initialize the database
+        CourierChannel courierChannel = CourierChannelResourceIntTest.createEntity(em);
+        em.persist(courierChannel);
+        em.flush();
+        courier.setCourierChannel(courierChannel);
+        courierRepository.saveAndFlush(courier);
+        Long courierChannelId = courierChannel.getId();
+
+        // Get all the courierList where courierChannel equals to courierChannelId
+        defaultCourierShouldBeFound("courierChannelId.equals=" + courierChannelId);
+
+        // Get all the courierList where courierChannel equals to courierChannelId + 1
+        defaultCourierShouldNotBeFound("courierChannelId.equals=" + (courierChannelId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultCourierShouldBeFound(String filter) throws Exception {
+        restCourierMockMvc.perform(get("/api/couriers?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(courier.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+            .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
+            .andExpect(jsonPath("$.[*].trackingParameter").value(hasItem(DEFAULT_TRACKING_PARAMETER.toString())))
+            .andExpect(jsonPath("$.[*].trackingUrl").value(hasItem(DEFAULT_TRACKING_URL.toString())))
+            .andExpect(jsonPath("$.[*].parentCourierId").value(hasItem(DEFAULT_PARENT_COURIER_ID.intValue())))
+            .andExpect(jsonPath("$.[*].hkShipping").value(hasItem(DEFAULT_HK_SHIPPING.booleanValue())))
+            .andExpect(jsonPath("$.[*].vendorShipping").value(hasItem(DEFAULT_VENDOR_SHIPPING.booleanValue())))
+            .andExpect(jsonPath("$.[*].reversePickup").value(hasItem(DEFAULT_REVERSE_PICKUP.booleanValue())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultCourierShouldNotBeFound(String filter) throws Exception {
+        restCourierMockMvc.perform(get("/api/couriers?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingCourier() throws Exception {

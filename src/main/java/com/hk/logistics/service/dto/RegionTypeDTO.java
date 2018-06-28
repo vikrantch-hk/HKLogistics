@@ -3,8 +3,6 @@ package com.hk.logistics.service.dto;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.poiji.annotation.ExcelCellName;
-
 /**
  * A DTO for the RegionType entity.
  */
@@ -12,10 +10,8 @@ public class RegionTypeDTO implements Serializable {
 
     private Long id;
 
-    @ExcelCellName("name")
     private String name;
 
-    @ExcelCellName("priority")
     private Long priority;
 
     public Long getId() {

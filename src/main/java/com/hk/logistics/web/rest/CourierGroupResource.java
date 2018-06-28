@@ -5,6 +5,8 @@ import com.hk.logistics.service.CourierGroupService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.CourierGroupDTO;
+import com.hk.logistics.service.dto.CourierGroupCriteria;
+import com.hk.logistics.service.CourierGroupQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +35,11 @@ public class CourierGroupResource {
 
     private final CourierGroupService courierGroupService;
 
-    public CourierGroupResource(CourierGroupService courierGroupService) {
+    private final CourierGroupQueryService courierGroupQueryService;
+
+    public CourierGroupResource(CourierGroupService courierGroupService, CourierGroupQueryService courierGroupQueryService) {
         this.courierGroupService = courierGroupService;
+        this.courierGroupQueryService = courierGroupQueryService;
     }
 
     /**
@@ -82,13 +87,15 @@ public class CourierGroupResource {
     /**
      * GET  /courier-groups : get all the courierGroups.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of courierGroups in body
      */
     @GetMapping("/courier-groups")
     @Timed
-    public List<CourierGroupDTO> getAllCourierGroups() {
-        log.debug("REST request to get all CourierGroups");
-        return courierGroupService.findAll();
+    public ResponseEntity<List<CourierGroupDTO>> getAllCourierGroups(CourierGroupCriteria criteria) {
+        log.debug("REST request to get CourierGroups by criteria: {}", criteria);
+        List<CourierGroupDTO> entityList = courierGroupQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

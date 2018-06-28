@@ -8,6 +8,8 @@ import { ICourier } from 'app/shared/model/courier.model';
 import { CourierService } from './courier.service';
 import { ICourierGroup } from 'app/shared/model/courier-group.model';
 import { CourierGroupService } from 'app/entities/courier-group';
+import { ICourierChannel } from 'app/shared/model/courier-channel.model';
+import { CourierChannelService } from 'app/entities/courier-channel';
 
 @Component({
     selector: 'jhi-courier-update',
@@ -19,10 +21,13 @@ export class CourierUpdateComponent implements OnInit {
 
     couriergroups: ICourierGroup[];
 
+    courierchannels: ICourierChannel[];
+
     constructor(
         private jhiAlertService: JhiAlertService,
         private courierService: CourierService,
         private courierGroupService: CourierGroupService,
+        private courierChannelService: CourierChannelService,
         private activatedRoute: ActivatedRoute
     ) {}
 
@@ -37,6 +42,13 @@ export class CourierUpdateComponent implements OnInit {
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
+        this.courierChannelService.query().subscribe(
+            (res: HttpResponse<ICourierChannel[]>) => {
+                this.courierchannels = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
+        console.log('courierchannels');
     }
 
     previousState() {
@@ -73,15 +85,8 @@ export class CourierUpdateComponent implements OnInit {
         return item.id;
     }
 
-    getSelected(selectedVals: Array<any>, option: any) {
-        if (selectedVals) {
-            for (let i = 0; i < selectedVals.length; i++) {
-                if (option.id === selectedVals[i].id) {
-                    return selectedVals[i];
-                }
-            }
-        }
-        return option;
+    trackCourierChannelById(index: number, item: ICourierChannel) {
+        return item.id;
     }
     get courier() {
         return this._courier;

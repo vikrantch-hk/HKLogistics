@@ -9,6 +9,8 @@ import com.hk.logistics.service.ZoneService;
 import com.hk.logistics.service.dto.ZoneDTO;
 import com.hk.logistics.service.mapper.ZoneMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.ZoneCriteria;
+import com.hk.logistics.service.ZoneQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +71,9 @@ public class ZoneResourceIntTest {
     private ZoneSearchRepository mockZoneSearchRepository;
 
     @Autowired
+    private ZoneQueryService zoneQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -87,7 +92,7 @@ public class ZoneResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ZoneResource zoneResource = new ZoneResource(zoneService);
+        final ZoneResource zoneResource = new ZoneResource(zoneService, zoneQueryService);
         this.restZoneMockMvc = MockMvcBuilders.standaloneSetup(zoneResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -204,6 +209,67 @@ public class ZoneResourceIntTest {
             .andExpect(jsonPath("$.id").value(zone.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllZonesByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        zoneRepository.saveAndFlush(zone);
+
+        // Get all the zoneList where name equals to DEFAULT_NAME
+        defaultZoneShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the zoneList where name equals to UPDATED_NAME
+        defaultZoneShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllZonesByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        zoneRepository.saveAndFlush(zone);
+
+        // Get all the zoneList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultZoneShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the zoneList where name equals to UPDATED_NAME
+        defaultZoneShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllZonesByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        zoneRepository.saveAndFlush(zone);
+
+        // Get all the zoneList where name is not null
+        defaultZoneShouldBeFound("name.specified=true");
+
+        // Get all the zoneList where name is null
+        defaultZoneShouldNotBeFound("name.specified=false");
+    }
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultZoneShouldBeFound(String filter) throws Exception {
+        restZoneMockMvc.perform(get("/api/zones?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(zone.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultZoneShouldNotBeFound(String filter) throws Exception {
+        restZoneMockMvc.perform(get("/api/zones?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingZone() throws Exception {

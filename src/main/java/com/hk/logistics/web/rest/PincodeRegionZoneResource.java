@@ -5,6 +5,8 @@ import com.hk.logistics.service.PincodeRegionZoneService;
 import com.hk.logistics.web.rest.errors.BadRequestAlertException;
 import com.hk.logistics.web.rest.util.HeaderUtil;
 import com.hk.logistics.service.dto.PincodeRegionZoneDTO;
+import com.hk.logistics.service.dto.PincodeRegionZoneCriteria;
+import com.hk.logistics.service.PincodeRegionZoneQueryService;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +35,11 @@ public class PincodeRegionZoneResource {
 
     private final PincodeRegionZoneService pincodeRegionZoneService;
 
-    public PincodeRegionZoneResource(PincodeRegionZoneService pincodeRegionZoneService) {
+    private final PincodeRegionZoneQueryService pincodeRegionZoneQueryService;
+
+    public PincodeRegionZoneResource(PincodeRegionZoneService pincodeRegionZoneService, PincodeRegionZoneQueryService pincodeRegionZoneQueryService) {
         this.pincodeRegionZoneService = pincodeRegionZoneService;
+        this.pincodeRegionZoneQueryService = pincodeRegionZoneQueryService;
     }
 
     /**
@@ -82,13 +87,15 @@ public class PincodeRegionZoneResource {
     /**
      * GET  /pincode-region-zones : get all the pincodeRegionZones.
      *
+     * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of pincodeRegionZones in body
      */
     @GetMapping("/pincode-region-zones")
     @Timed
-    public List<PincodeRegionZoneDTO> getAllPincodeRegionZones() {
-        log.debug("REST request to get all PincodeRegionZones");
-        return pincodeRegionZoneService.findAll();
+    public ResponseEntity<List<PincodeRegionZoneDTO>> getAllPincodeRegionZones(PincodeRegionZoneCriteria criteria) {
+        log.debug("REST request to get PincodeRegionZones by criteria: {}", criteria);
+        List<PincodeRegionZoneDTO> entityList = pincodeRegionZoneQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
     }
 
     /**

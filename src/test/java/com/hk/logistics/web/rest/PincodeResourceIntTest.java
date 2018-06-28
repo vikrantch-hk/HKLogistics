@@ -3,12 +3,18 @@ package com.hk.logistics.web.rest;
 import com.hk.logistics.HkLogisticsApp;
 
 import com.hk.logistics.domain.Pincode;
+import com.hk.logistics.domain.City;
+import com.hk.logistics.domain.State;
+import com.hk.logistics.domain.Zone;
+import com.hk.logistics.domain.Hub;
 import com.hk.logistics.repository.PincodeRepository;
 import com.hk.logistics.repository.search.PincodeSearchRepository;
 import com.hk.logistics.service.PincodeService;
 import com.hk.logistics.service.dto.PincodeDTO;
 import com.hk.logistics.service.mapper.PincodeMapper;
 import com.hk.logistics.web.rest.errors.ExceptionTranslator;
+import com.hk.logistics.service.dto.PincodeCriteria;
+import com.hk.logistics.service.PincodeQueryService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -81,6 +87,9 @@ public class PincodeResourceIntTest {
     private PincodeSearchRepository mockPincodeSearchRepository;
 
     @Autowired
+    private PincodeQueryService pincodeQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -99,7 +108,7 @@ public class PincodeResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PincodeResource pincodeResource = new PincodeResource(pincodeService);
+        final PincodeResource pincodeResource = new PincodeResource(pincodeService, pincodeQueryService);
         this.restPincodeMockMvc = MockMvcBuilders.standaloneSetup(pincodeResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -232,6 +241,303 @@ public class PincodeResourceIntTest {
             .andExpect(jsonPath("$.lastMileCost").value(DEFAULT_LAST_MILE_COST.doubleValue()))
             .andExpect(jsonPath("$.tier").value(DEFAULT_TIER.toString()));
     }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByPincodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where pincode equals to DEFAULT_PINCODE
+        defaultPincodeShouldBeFound("pincode.equals=" + DEFAULT_PINCODE);
+
+        // Get all the pincodeList where pincode equals to UPDATED_PINCODE
+        defaultPincodeShouldNotBeFound("pincode.equals=" + UPDATED_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByPincodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where pincode in DEFAULT_PINCODE or UPDATED_PINCODE
+        defaultPincodeShouldBeFound("pincode.in=" + DEFAULT_PINCODE + "," + UPDATED_PINCODE);
+
+        // Get all the pincodeList where pincode equals to UPDATED_PINCODE
+        defaultPincodeShouldNotBeFound("pincode.in=" + UPDATED_PINCODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByPincodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where pincode is not null
+        defaultPincodeShouldBeFound("pincode.specified=true");
+
+        // Get all the pincodeList where pincode is null
+        defaultPincodeShouldNotBeFound("pincode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByRegionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where region equals to DEFAULT_REGION
+        defaultPincodeShouldBeFound("region.equals=" + DEFAULT_REGION);
+
+        // Get all the pincodeList where region equals to UPDATED_REGION
+        defaultPincodeShouldNotBeFound("region.equals=" + UPDATED_REGION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByRegionIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where region in DEFAULT_REGION or UPDATED_REGION
+        defaultPincodeShouldBeFound("region.in=" + DEFAULT_REGION + "," + UPDATED_REGION);
+
+        // Get all the pincodeList where region equals to UPDATED_REGION
+        defaultPincodeShouldNotBeFound("region.in=" + UPDATED_REGION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByRegionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where region is not null
+        defaultPincodeShouldBeFound("region.specified=true");
+
+        // Get all the pincodeList where region is null
+        defaultPincodeShouldNotBeFound("region.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLocalityIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where locality equals to DEFAULT_LOCALITY
+        defaultPincodeShouldBeFound("locality.equals=" + DEFAULT_LOCALITY);
+
+        // Get all the pincodeList where locality equals to UPDATED_LOCALITY
+        defaultPincodeShouldNotBeFound("locality.equals=" + UPDATED_LOCALITY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLocalityIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where locality in DEFAULT_LOCALITY or UPDATED_LOCALITY
+        defaultPincodeShouldBeFound("locality.in=" + DEFAULT_LOCALITY + "," + UPDATED_LOCALITY);
+
+        // Get all the pincodeList where locality equals to UPDATED_LOCALITY
+        defaultPincodeShouldNotBeFound("locality.in=" + UPDATED_LOCALITY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLocalityIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where locality is not null
+        defaultPincodeShouldBeFound("locality.specified=true");
+
+        // Get all the pincodeList where locality is null
+        defaultPincodeShouldNotBeFound("locality.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLastMileCostIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where lastMileCost equals to DEFAULT_LAST_MILE_COST
+        defaultPincodeShouldBeFound("lastMileCost.equals=" + DEFAULT_LAST_MILE_COST);
+
+        // Get all the pincodeList where lastMileCost equals to UPDATED_LAST_MILE_COST
+        defaultPincodeShouldNotBeFound("lastMileCost.equals=" + UPDATED_LAST_MILE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLastMileCostIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where lastMileCost in DEFAULT_LAST_MILE_COST or UPDATED_LAST_MILE_COST
+        defaultPincodeShouldBeFound("lastMileCost.in=" + DEFAULT_LAST_MILE_COST + "," + UPDATED_LAST_MILE_COST);
+
+        // Get all the pincodeList where lastMileCost equals to UPDATED_LAST_MILE_COST
+        defaultPincodeShouldNotBeFound("lastMileCost.in=" + UPDATED_LAST_MILE_COST);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByLastMileCostIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where lastMileCost is not null
+        defaultPincodeShouldBeFound("lastMileCost.specified=true");
+
+        // Get all the pincodeList where lastMileCost is null
+        defaultPincodeShouldNotBeFound("lastMileCost.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByTierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where tier equals to DEFAULT_TIER
+        defaultPincodeShouldBeFound("tier.equals=" + DEFAULT_TIER);
+
+        // Get all the pincodeList where tier equals to UPDATED_TIER
+        defaultPincodeShouldNotBeFound("tier.equals=" + UPDATED_TIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByTierIsInShouldWork() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where tier in DEFAULT_TIER or UPDATED_TIER
+        defaultPincodeShouldBeFound("tier.in=" + DEFAULT_TIER + "," + UPDATED_TIER);
+
+        // Get all the pincodeList where tier equals to UPDATED_TIER
+        defaultPincodeShouldNotBeFound("tier.in=" + UPDATED_TIER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByTierIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        pincodeRepository.saveAndFlush(pincode);
+
+        // Get all the pincodeList where tier is not null
+        defaultPincodeShouldBeFound("tier.specified=true");
+
+        // Get all the pincodeList where tier is null
+        defaultPincodeShouldNotBeFound("tier.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPincodesByCityIsEqualToSomething() throws Exception {
+        // Initialize the database
+        City city = CityResourceIntTest.createEntity(em);
+        em.persist(city);
+        em.flush();
+        pincode.setCity(city);
+        pincodeRepository.saveAndFlush(pincode);
+        Long cityId = city.getId();
+
+        // Get all the pincodeList where city equals to cityId
+        defaultPincodeShouldBeFound("cityId.equals=" + cityId);
+
+        // Get all the pincodeList where city equals to cityId + 1
+        defaultPincodeShouldNotBeFound("cityId.equals=" + (cityId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodesByStateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        State state = StateResourceIntTest.createEntity(em);
+        em.persist(state);
+        em.flush();
+        pincode.setState(state);
+        pincodeRepository.saveAndFlush(pincode);
+        Long stateId = state.getId();
+
+        // Get all the pincodeList where state equals to stateId
+        defaultPincodeShouldBeFound("stateId.equals=" + stateId);
+
+        // Get all the pincodeList where state equals to stateId + 1
+        defaultPincodeShouldNotBeFound("stateId.equals=" + (stateId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodesByZoneIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Zone zone = ZoneResourceIntTest.createEntity(em);
+        em.persist(zone);
+        em.flush();
+        pincode.setZone(zone);
+        pincodeRepository.saveAndFlush(pincode);
+        Long zoneId = zone.getId();
+
+        // Get all the pincodeList where zone equals to zoneId
+        defaultPincodeShouldBeFound("zoneId.equals=" + zoneId);
+
+        // Get all the pincodeList where zone equals to zoneId + 1
+        defaultPincodeShouldNotBeFound("zoneId.equals=" + (zoneId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPincodesByHubIsEqualToSomething() throws Exception {
+        // Initialize the database
+        Hub hub = HubResourceIntTest.createEntity(em);
+        em.persist(hub);
+        em.flush();
+        pincode.setHub(hub);
+        pincodeRepository.saveAndFlush(pincode);
+        Long hubId = hub.getId();
+
+        // Get all the pincodeList where hub equals to hubId
+        defaultPincodeShouldBeFound("hubId.equals=" + hubId);
+
+        // Get all the pincodeList where hub equals to hubId + 1
+        defaultPincodeShouldNotBeFound("hubId.equals=" + (hubId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned
+     */
+    private void defaultPincodeShouldBeFound(String filter) throws Exception {
+        restPincodeMockMvc.perform(get("/api/pincodes?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(pincode.getId().intValue())))
+            .andExpect(jsonPath("$.[*].pincode").value(hasItem(DEFAULT_PINCODE.toString())))
+            .andExpect(jsonPath("$.[*].region").value(hasItem(DEFAULT_REGION.toString())))
+            .andExpect(jsonPath("$.[*].locality").value(hasItem(DEFAULT_LOCALITY.toString())))
+            .andExpect(jsonPath("$.[*].lastMileCost").value(hasItem(DEFAULT_LAST_MILE_COST.doubleValue())))
+            .andExpect(jsonPath("$.[*].tier").value(hasItem(DEFAULT_TIER.toString())));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned
+     */
+    private void defaultPincodeShouldNotBeFound(String filter) throws Exception {
+        restPincodeMockMvc.perform(get("/api/pincodes?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
     @Test
     @Transactional
     public void getNonExistingPincode() throws Exception {

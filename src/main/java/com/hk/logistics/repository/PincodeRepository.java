@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PincodeRepository extends JpaRepository<Pincode, Long> {
+public interface PincodeRepository extends JpaRepository<Pincode, Long>, JpaSpecificationExecutor<Pincode> {
 
 	Pincode findByPincode(String pincode);
 }

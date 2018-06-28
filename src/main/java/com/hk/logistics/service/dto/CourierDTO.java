@@ -2,8 +2,6 @@ package com.hk.logistics.service.dto;
 
 import javax.validation.constraints.*;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -31,8 +29,14 @@ public class CourierDTO implements Serializable {
 
     private Boolean reversePickup;
 
-    private Set<CourierGroupDTO> courierGroups = new HashSet<>();
+    private Long courierGroupId;
 
+    private String courierGroupName;
+
+    private Long courierChannelId;
+
+    private String courierChannelName;
+    
     public Long getId() {
         return id;
     }
@@ -105,15 +109,39 @@ public class CourierDTO implements Serializable {
         this.reversePickup = reversePickup;
     }
 
-    public Set<CourierGroupDTO> getCourierGroups() {
-        return courierGroups;
+    public Long getCourierGroupId() {
+        return courierGroupId;
     }
 
-    public void setCourierGroups(Set<CourierGroupDTO> courierGroups) {
-        this.courierGroups = courierGroups;
+    public void setCourierGroupId(Long courierGroupId) {
+        this.courierGroupId = courierGroupId;
     }
 
-    @Override
+    public String getCourierGroupName() {
+        return courierGroupName;
+    }
+
+    public void setCourierGroupName(String courierGroupName) {
+        this.courierGroupName = courierGroupName;
+    }
+
+    public Long getCourierChannelId() {
+        return courierChannelId;
+    }
+
+    public void setCourierChannelId(Long courierChannelId) {
+        this.courierChannelId = courierChannelId;
+    }
+
+    public String getCourierChannelName() {
+		return courierChannelName;
+	}
+
+	public void setCourierChannelName(String courierChannelName) {
+		this.courierChannelName = courierChannelName;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -146,6 +174,9 @@ public class CourierDTO implements Serializable {
             ", hkShipping='" + isHkShipping() + "'" +
             ", vendorShipping='" + isVendorShipping() + "'" +
             ", reversePickup='" + isReversePickup() + "'" +
+            ", courierGroup=" + getCourierGroupId() +
+            ", courierGroup='" + getCourierGroupName() + "'" +
+            ", courierChannel=" + getCourierChannelId() +
             "}";
     }
 }
