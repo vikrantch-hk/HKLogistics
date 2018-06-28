@@ -32,9 +32,9 @@ spring:
         serialization.indent_output: true
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:h2:mem:hklogistics;DB_CLOSE_DELAY=-1
-        username: HKLogistics
-        password:
+        url: jdbc:mysql://192.168.70.108:3306/hk_logistics
+        username: hkadmin
+        password: admin2K11!
     h2:
         console:
             enabled: false
